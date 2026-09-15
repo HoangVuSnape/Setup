@@ -41,3 +41,38 @@ function Get-FlatLoginItems {
     }
     return $flat
 }
+
+function ConvertTo-ToggledSelection {
+    param(
+        [bool[]]$CurrentState,
+        [string]$InputLine
+    )
+    $state = $CurrentState.Clone()
+    $warnings = @()
+    $trimmed = $InputLine.Trim()
+
+    if ($trimmed -eq '') {
+        return [PSCustomObject]@{ State = $state; Warnings = $warnings }
+    }
+
+    if ($trimmed -eq 'all') {
+        for ($i = 0; $i -lt $state.Length; $i++) { $state[$i] = $true }
+        return [PSCustomObject]@{ State = $state; Warnings = $warnings }
+    }
+
+    $tokens = $trimmed -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+    foreach ($token in $tokens) {
+        $num = 0
+        if (-not [int]::TryParse($token, [ref]$num)) {
+            $warnings += "Bo qua '$token': khong phai so hop le."
+            continue
+        }
+        if ($num -lt 1 -or $num -gt $state.Length) {
+            $warnings += "Bo qua ${num}: ngoai pham vi (1-$($state.Length))."
+            continue
+        }
+        $idx = $num - 1
+        $state[$idx] = -not $state[$idx]
+    }
+    return [PSCustomObject]@{ State = $state; Warnings = $warnings }
+}
