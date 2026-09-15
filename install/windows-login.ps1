@@ -19,3 +19,25 @@ $script:LoginItemGroups = [ordered]@{
         [PSCustomObject]@{ Name = 'Bitwarden'; Type = 'App'; SearchTerm = 'Bitwarden' }
     )
 }
+
+function Get-FlatLoginItems {
+    param([System.Collections.Specialized.OrderedDictionary]$Groups)
+    $flat = @()
+    $i = 1
+    foreach ($category in $Groups.Keys) {
+        foreach ($item in $Groups[$category]) {
+            $entry = [PSCustomObject]@{
+                Index        = $i
+                Name         = $item.Name
+                Category     = $category
+                Type         = $item.Type
+                Command      = $item.Command
+                ArgumentList = $item.ArgumentList
+                SearchTerm   = $item.SearchTerm
+            }
+            $flat += $entry
+            $i++
+        }
+    }
+    return $flat
+}
