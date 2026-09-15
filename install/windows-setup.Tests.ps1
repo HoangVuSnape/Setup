@@ -195,3 +195,19 @@ Describe 'Invoke-InstallPlan' {
         $results | ForEach-Object { $_.Message | Should -BeLike '*DRY RUN*' }
     }
 }
+
+Describe 'Format-Summary' {
+    BeforeAll {
+        $script:summaryResults = @(
+            [PSCustomObject]@{ Name = 'Git'; WingetId = 'Git.Git'; Success = $true; Message = 'Cai thanh cong.' }
+            [PSCustomObject]@{ Name = 'MiKTeX'; WingetId = 'MiKTeX.MiKTeX'; Success = $false; Message = 'winget tra ve exit code 1.' }
+        )
+    }
+
+    It 'reports success count and a retry command for each failure' {
+        $lines = Format-Summary -Results $script:summaryResults
+        ($lines -join "`n") | Should -BeLike '*1/2 thanh cong*'
+        ($lines -join "`n") | Should -BeLike '*MiKTeX*'
+        ($lines -join "`n") | Should -BeLike '*winget install --id MiKTeX.MiKTeX -e*'
+    }
+}

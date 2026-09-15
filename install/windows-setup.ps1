@@ -150,3 +150,15 @@ function Invoke-InstallPlan {
     }
     return $results
 }
+
+function Format-Summary {
+    param([object[]]$Results)
+    $successCount = @($Results | Where-Object { $_.Success }).Count
+    $total = $Results.Count
+    $lines = @()
+    $lines += "=== Hoan tat: $successCount/$total thanh cong ==="
+    foreach ($f in @($Results | Where-Object { -not $_.Success })) {
+        $lines += "Loi: $($f.Name) - $($f.Message) - thu lai bang: winget install --id $($f.WingetId) -e"
+    }
+    return $lines
+}
