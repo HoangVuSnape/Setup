@@ -157,8 +157,12 @@ function Format-Summary {
     $total = $Results.Count
     $lines = @()
     $lines += "=== Hoan tat: $successCount/$total thanh cong ==="
-    foreach ($f in @($Results | Where-Object { -not $_.Success })) {
-        $lines += "Loi: $($f.Name) - $($f.Message) - thu lai bang: winget install --id $($f.WingetId) -e"
+    foreach ($r in $Results) {
+        if (-not $r.Success) {
+            $lines += "Loi: $($r.Name) - $($r.Message) - thu lai bang: winget install --id $($r.WingetId) -e"
+        } elseif ($r.Message -like '*DRY RUN*') {
+            $lines += "$($r.Name): $($r.Message)"
+        }
     }
     return $lines
 }

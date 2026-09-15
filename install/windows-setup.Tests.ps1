@@ -210,4 +210,18 @@ Describe 'Format-Summary' {
         ($lines -join "`n") | Should -BeLike '*MiKTeX*'
         ($lines -join "`n") | Should -BeLike '*winget install --id MiKTeX.MiKTeX -e*'
     }
+
+    It 'also lists per-app DRY RUN messages alongside failures, but not plain success messages' {
+        $results = @(
+            [PSCustomObject]@{ Name = 'Git'; WingetId = 'Git.Git'; Success = $true; Message = 'Cai thanh cong.' }
+            [PSCustomObject]@{ Name = 'VS Code'; WingetId = 'Microsoft.VisualStudioCode'; Success = $true; Message = '[DRY RUN] se duoc cai.' }
+            [PSCustomObject]@{ Name = 'MiKTeX'; WingetId = 'MiKTeX.MiKTeX'; Success = $false; Message = 'winget tra ve exit code 1.' }
+        )
+        $lines = Format-Summary -Results $results
+        $joined = $lines -join "`n"
+
+        $joined | Should -BeLike '*VS Code*DRY RUN*'
+        $joined | Should -BeLike '*MiKTeX*'
+        ($lines | Where-Object { $_ -like '*Git*' }) | Should -BeNullOrEmpty
+    }
 }
