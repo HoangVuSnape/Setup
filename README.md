@@ -13,3 +13,12 @@ Bắt đầu tại [docs/linux/00-checklist.md](docs/linux/00-checklist.md).
 ---
 
 Xem thiết kế đầy đủ của dự án tại [docs/superpowers/specs/2026-09-15-pc-setup-docs-design.md](docs/superpowers/specs/2026-09-15-pc-setup-docs-design.md).
+
+## Mở menu từ Terminal
+
+Menu hiện tại chỉ mở đúng file hướng dẫn đã chọn; nó chưa tự chạy lệnh cài đặt.
+
+- Windows PowerShell: chạy `.\scripts\setup-menu.ps1`.
+- Linux Mint: chạy `chmod +x scripts/setup-menu.sh` một lần, sau đó chạy `./scripts/setup-menu.sh`.
+
+Menu sẽ cho chọn Windows hoặc Linux, rồi mở từng bước bằng VS Code. Nếu chưa cài VS Code, menu sẽ dùng ứng dụng mặc định của hệ điều hành để mở file Markdown.
