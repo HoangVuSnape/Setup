@@ -24,3 +24,53 @@ Describe 'Get-FlatOptionalApps' {
         $flat[2].Category | Should -Be 'B'
     }
 }
+
+Describe 'ConvertTo-ToggledSelection' {
+    It 'toggles listed 1-based indices on when currently off' {
+        $state = @($false, $false, $false, $false, $false)
+        $result = ConvertTo-ToggledSelection -CurrentState $state -InputLine '1,3'
+
+        $result.State[0] | Should -Be $true
+        $result.State[1] | Should -Be $false
+        $result.State[2] | Should -Be $true
+        $result.Warnings.Count | Should -Be 0
+    }
+
+    It 'toggles the same index twice back to its original value' {
+        $state = @($false, $false)
+        $result = ConvertTo-ToggledSelection -CurrentState $state -InputLine '1,1'
+
+        $result.State[0] | Should -Be $false
+    }
+
+    It 'treats "all" as select-all, not a toggle' {
+        $state = @($true, $false, $false)
+        $result = ConvertTo-ToggledSelection -CurrentState $state -InputLine 'all'
+
+        $result.State | Should -Be @($true, $true, $true)
+    }
+
+    It 'warns and skips non-numeric tokens without throwing' {
+        $state = @($false, $false)
+        $result = ConvertTo-ToggledSelection -CurrentState $state -InputLine '1,abc'
+
+        $result.State[0] | Should -Be $true
+        $result.Warnings.Count | Should -Be 1
+    }
+
+    It 'warns and skips out-of-range indices' {
+        $state = @($false, $false)
+        $result = ConvertTo-ToggledSelection -CurrentState $state -InputLine '99'
+
+        $result.State | Should -Be @($false, $false)
+        $result.Warnings.Count | Should -Be 1
+    }
+
+    It 'returns the state unchanged for empty input' {
+        $state = @($true, $false)
+        $result = ConvertTo-ToggledSelection -CurrentState $state -InputLine ''
+
+        $result.State | Should -Be @($true, $false)
+        $result.Warnings.Count | Should -Be 0
+    }
+}
