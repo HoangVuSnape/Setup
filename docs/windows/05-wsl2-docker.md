@@ -35,7 +35,7 @@ Sau bước này, máy đã bật WSL2 (chạy nhân Linux thật ngay bên tron
      winget install --id Docker.DockerDesktop -e
      ```
    - Cài xong, mở app **Docker Desktop** từ Start Menu. Lần đầu mở sẽ hiện màn hình **Docker Subscription Service Agreement** — bấm **Accept**. Sau đó có màn hình mời đăng nhập Docker Hub — bước này **không bắt buộc** cho nhu cầu cá nhân, có thể bỏ qua (tìm nút dạng "Skip"/đóng cửa sổ đó lại).
-   - Xác nhận Docker đang dùng WSL2 backend: bấm icon **bánh răng (Settings)** ở góc trên bên phải cửa sổ Docker Desktop → mục **General** (sidebar trái) → tìm ô **"Use WSL 2 based engine"**. Trên máy đã bật WSL2 đúng như bước 2–3, Docker Desktop tự bật sẵn tuỳ chọn này — ô này có thể hiện mờ/không cho tắt vì đã là bắt buộc mặc định trên máy hỗ trợ WSL2, đó là bình thường chứ không phải lỗi. Muốn xem/chỉnh distro nào đang được Docker tích hợp, vào thêm **Settings → Resources → WSL Integration**.
+   - Xác nhận Docker đang dùng WSL2 backend: bấm icon **bánh răng (Settings)** ở góc trên bên phải cửa sổ Docker Desktop → mục **General** (sidebar trái) → tìm ô **"Use WSL 2 based engine"**. Trên máy đã bật WSL2 đúng như bước 2–3, Docker Desktop tự bật sẵn tuỳ chọn này — **ô này có thể không hiện ra ở đó luôn** (không phải chỉ mờ đi) vì đã là mặc định bắt buộc trên máy hỗ trợ WSL2, không thấy ô này là bình thường chứ không phải lỗi. Muốn xem/chỉnh distro nào đang được Docker tích hợp, vào thêm **Settings → Resources → WSL Integration**. Nếu ô này hiện ra nhưng bị **mờ kèm theo Docker báo lỗi** (không phải chỉ đơn giản là "ẩn/không thấy"), thử chạy `wsl --update` trong PowerShell rồi khởi động lại Docker Desktop — dấu hiệu WSL2 đang gặp vấn đề thật, không phải chỉ là "trạng thái mặc định".
 
 5. **Kiểm tra Docker hoạt động.**
    ```
