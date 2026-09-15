@@ -162,3 +162,50 @@ function Format-Summary {
     }
     return $lines
 }
+
+function Main {
+    param([switch]$DryRun)
+
+    if (-not (Test-WingetAvailable)) {
+        Write-Host "Khong tim thay winget. Xem docs/windows/02-essentials.md de cai winget truoc." -ForegroundColor Red
+        return
+    }
+
+    $flatApps = Get-FlatOptionalApps -Groups $script:OptionalAppGroups
+    $state = New-Object bool[] $flatApps.Count
+
+    while ($true) {
+        Write-Host ''
+        (Format-Menu -FlatOptionalApps $flatApps -SelectionState $state -MandatoryApps $script:MandatoryApps) | ForEach-Object { Write-Host $_ }
+        Write-Host ''
+        $line = Read-Host "Go so de tick/bo chon (vd: 1,3,7), go 'all' de chon het, Enter rong de xac nhan"
+        if ($line.Trim() -eq '') { break }
+        $toggled = ConvertTo-ToggledSelection -CurrentState $state -InputLine $line
+        $state = $toggled.State
+        foreach ($w in $toggled.Warnings) { Write-Host $w -ForegroundColor Yellow }
+    }
+
+    $selectedApps = @()
+    for ($i = 0; $i -lt $flatApps.Count; $i++) {
+        if ($state[$i]) { $selectedApps += $flatApps[$i] }
+    }
+    $allApps = @($script:MandatoryApps) + $selectedApps
+
+    Write-Host ''
+    Write-Host "Ban se cai: $(($script:MandatoryApps | ForEach-Object { $_.Name }) -join ', ') (mac dinh)"
+    if ($selectedApps.Count -gt 0) {
+        Write-Host "          + $(($selectedApps | ForEach-Object { $_.Name }) -join ', ') (da chon)"
+    }
+    $confirm = Read-Host 'Xac nhan cai? (y/n)'
+    if ($confirm -notin @('y', 'Y')) {
+        Write-Host 'Da huy.'
+        return
+    }
+
+    $results = Invoke-InstallPlan -Apps $allApps -DryRun:$DryRun
+    (Format-Summary -Results $results) | ForEach-Object { Write-Host $_ }
+}
+
+if (-not $env:PESTER_TESTING) {
+    Main -DryRun:$DryRun
+}
