@@ -149,3 +149,49 @@ Describe 'Install-App' {
         }
     }
 }
+
+Describe 'Invoke-InstallPlan' {
+    BeforeAll {
+        $apps = @(
+            [PSCustomObject]@{ Name = 'App1'; WingetId = 'Id1' }
+            [PSCustomObject]@{ Name = 'App2'; WingetId = 'Id2' }
+            [PSCustomObject]@{ Name = 'App3'; WingetId = 'Id3' }
+        )
+    }
+
+    It 'skips apps already installed without calling Install-App' {
+        Mock Test-AppInstalled { return $true }
+        Mock Install-App { throw 'should not be called' }
+
+        $results = Invoke-InstallPlan -Apps $apps
+        $results.Count | Should -Be 3
+        $results | ForEach-Object { $_.Message | Should -Be 'Da cai san, bo qua.' }
+    }
+
+    It 'continues installing remaining apps after one fails' {
+        Mock Test-AppInstalled { return $false }
+        Mock Install-App {
+            param($Name, $WingetId)
+            if ($Name -eq 'App2') {
+                return [PSCustomObject]@{ Name = $Name; WingetId = $WingetId; Success = $false; Message = 'loi gia lap' }
+            }
+            return [PSCustomObject]@{ Name = $Name; WingetId = $WingetId; Success = $true; Message = 'Cai thanh cong.' }
+        }
+
+        $results = Invoke-InstallPlan -Apps $apps
+        $results.Count | Should -Be 3
+        @($results | Where-Object { $_.Success }).Count | Should -Be 2
+        @($results | Where-Object { -not $_.Success }).Count | Should -Be 1
+        $results[2].Name | Should -Be 'App3'
+        $results[2].Success | Should -Be $true
+    }
+
+    It 'in DryRun mode marks every app as a simulated install without calling Test-AppInstalled or Install-App' {
+        Mock Test-AppInstalled { throw 'should not be called in DryRun' }
+        Mock Install-App { throw 'should not be called in DryRun' }
+
+        $results = Invoke-InstallPlan -Apps $apps -DryRun
+        $results.Count | Should -Be 3
+        $results | ForEach-Object { $_.Message | Should -BeLike '*DRY RUN*' }
+    }
+}

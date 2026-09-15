@@ -130,3 +130,23 @@ function Install-App {
     }
     return [PSCustomObject]@{ Name = $Name; WingetId = $WingetId; Success = $false; Message = "winget tra ve exit code $exitCode." }
 }
+
+function Invoke-InstallPlan {
+    param(
+        [object[]]$Apps,
+        [switch]$DryRun
+    )
+    $results = @()
+    foreach ($app in $Apps) {
+        if ($DryRun) {
+            $results += [PSCustomObject]@{ Name = $app.Name; WingetId = $app.WingetId; Success = $true; Message = '[DRY RUN] se duoc cai.' }
+            continue
+        }
+        if (Test-AppInstalled -WingetId $app.WingetId) {
+            $results += [PSCustomObject]@{ Name = $app.Name; WingetId = $app.WingetId; Success = $true; Message = 'Da cai san, bo qua.' }
+            continue
+        }
+        $results += Install-App -Name $app.Name -WingetId $app.WingetId
+    }
+    return $results
+}
