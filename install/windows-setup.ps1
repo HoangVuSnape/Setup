@@ -31,3 +31,21 @@ $script:OptionalAppGroups = [ordered]@{
         [PSCustomObject]@{ Name = 'Zalo'; WingetId = 'VNGCorp.Zalo' }
     )
 }
+
+function Get-FlatOptionalApps {
+    param([System.Collections.Specialized.OrderedDictionary]$Groups)
+    $flat = @()
+    $i = 1
+    foreach ($category in $Groups.Keys) {
+        foreach ($app in $Groups[$category]) {
+            $flat += [PSCustomObject]@{
+                Index    = $i
+                Name     = $app.Name
+                WingetId = $app.WingetId
+                Category = $category
+            }
+            $i++
+        }
+    }
+    return $flat
+}
