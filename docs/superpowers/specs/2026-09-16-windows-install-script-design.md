@@ -60,7 +60,7 @@ Từng app nếu cần quyền Admin để cài, bản thân `winget`/installer 
 | VS Code | `Microsoft.VisualStudioCode` |
 | GitHub Desktop | `GitHub.GitHubDesktop` |
 | DataGrip | `JetBrains.DataGrip` |
-| Claude Code CLI | *cần nghiên cứu — npm hay installer riêng, xác nhận lúc viết code* |
+| Claude Desktop | *winget id tạm — xác nhận lúc viết code (ví dụ `Anthropic.Claude`)* |
 | MiKTeX | `MiKTeX.MiKTeX` |
 | Trình duyệt (Chrome) | `Google.Chrome` |
 
@@ -70,7 +70,6 @@ Từng app nếu cần quyền Admin để cài, bản thân `winget`/installer 
 |---|---|
 | Python/Miniconda | `Anaconda.Miniconda3` |
 | Obsidian | `Obsidian.Obsidian` |
-| Ollama | `Ollama.Ollama` |
 
 **Tùy chọn — nhóm Media & Communication:**
 
@@ -93,27 +92,26 @@ Sẽ tự cài (không cần chọn): Git, GitHub CLI, Docker Desktop, 7-Zip, Wi
  [ ] 1. VS Code
  [ ] 2. GitHub Desktop
  [ ] 3. DataGrip
- [ ] 4. Claude Code CLI
+ [ ] 4. Claude Desktop
  [ ] 5. MiKTeX
  [ ] 6. Trình duyệt (Chrome)
 
 -- AI & Productivity --
  [ ] 7. Python/Miniconda
  [ ] 8. Obsidian
- [ ] 9. Ollama
 
 -- Media & Communication --
- [ ] 10. OBS Studio
- [ ] 11. Discord
- [ ] 12. Zalo
+ [ ] 9. OBS Studio
+ [ ] 10. Discord
+ [ ] 11. Zalo
 
 Gõ số để tick/bỏ chọn (vd: 1,3,7), gõ 'all' để chọn hết, Enter rỗng để xác nhận và bắt đầu cài.
 > 1,4,7,8
-Đã chọn: VS Code, Claude Code CLI, Python/Miniconda, Obsidian
+Đã chọn: VS Code, Claude Desktop, Python/Miniconda, Obsidian
 > [Enter để xác nhận]
 
 Bạn sẽ cài: Git, GitHub CLI, Docker Desktop, 7-Zip, Windows Terminal (mặc định)
-          + VS Code, Claude Code CLI, Python/Miniconda, Obsidian (đã chọn)
+          + VS Code, Claude Desktop, Python/Miniconda, Obsidian (đã chọn)
 Xác nhận cài? (y/n): y
 
 [1/9] Git ... đã cài sẵn, bỏ qua ✓
@@ -149,7 +147,7 @@ Với ~17 app hiện tại, để toàn bộ danh sách + logic trong 1 file `.p
 
 - Chỉ làm cho Windows trước; Linux để sau khi có máy thật.
 - Tương tác menu: gõ số để tick/bỏ chọn, Enter rỗng để xác nhận (không dùng mũi tên/Space).
-- 5 app luôn cài, 12 app tùy chọn chia 3 nhóm (Dev Tools / AI & Productivity / Media & Communication).
+- 5 app luôn cài, 11 app tùy chọn chia 3 nhóm (Dev Tools / AI & Productivity / Media & Communication).
 - Cách chạy: `irm <raw-url> | iex` — cần repo GitHub public.
 - 1 file `.ps1` tự chứa, không tách manifest JSON.
 - Có kiểm tra trùng, không dừng khi lỗi 1 app, xác nhận trước khi cài, cờ `-DryRun` để test an toàn.
