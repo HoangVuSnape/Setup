@@ -63,6 +63,7 @@ Từng app nếu cần quyền Admin để cài, bản thân `winget`/installer 
 | Claude Desktop | *winget id tạm — xác nhận lúc viết code (ví dụ `Anthropic.Claude`)* |
 | MiKTeX | `MiKTeX.MiKTeX` |
 | Trình duyệt (Chrome) | `Google.Chrome` |
+| Bitwarden (password manager) | `Bitwarden.Bitwarden` |
 
 **Tùy chọn — nhóm AI & Productivity:**
 
@@ -95,18 +96,19 @@ Sẽ tự cài (không cần chọn): Git, GitHub CLI, Docker Desktop, 7-Zip, Wi
  [ ] 4. Claude Desktop
  [ ] 5. MiKTeX
  [ ] 6. Trình duyệt (Chrome)
+ [ ] 7. Bitwarden
 
 -- AI & Productivity --
- [ ] 7. Python/Miniconda
- [ ] 8. Obsidian
+ [ ] 8. Python/Miniconda
+ [ ] 9. Obsidian
 
 -- Media & Communication --
- [ ] 9. OBS Studio
- [ ] 10. Discord
- [ ] 11. Zalo
+ [ ] 10. OBS Studio
+ [ ] 11. Discord
+ [ ] 12. Zalo
 
 Gõ số để tick/bỏ chọn (vd: 1,3,7), gõ 'all' để chọn hết, Enter rỗng để xác nhận và bắt đầu cài.
-> 1,4,7,8
+> 1,4,8,9
 Đã chọn: VS Code, Claude Desktop, Python/Miniconda, Obsidian
 > [Enter để xác nhận]
 
@@ -147,7 +149,7 @@ Với ~17 app hiện tại, để toàn bộ danh sách + logic trong 1 file `.p
 
 - Chỉ làm cho Windows trước; Linux để sau khi có máy thật.
 - Tương tác menu: gõ số để tick/bỏ chọn, Enter rỗng để xác nhận (không dùng mũi tên/Space).
-- 5 app luôn cài, 11 app tùy chọn chia 3 nhóm (Dev Tools / AI & Productivity / Media & Communication).
+- 5 app luôn cài, 12 app tùy chọn chia 3 nhóm (Dev Tools / AI & Productivity / Media & Communication) — bao gồm Bitwarden (password manager), thêm sau khi script gốc đã triển khai xong, theo yêu cầu bổ sung của user.
 - Cách chạy: `irm <raw-url> | iex` — cần repo GitHub public.
 - 1 file `.ps1` tự chứa, không tách manifest JSON.
 - Có kiểm tra trùng, không dừng khi lỗi 1 app, xác nhận trước khi cài, cờ `-DryRun` để test an toàn.
