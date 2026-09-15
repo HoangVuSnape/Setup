@@ -20,16 +20,16 @@ Sau bước này, máy có Miniconda (Python + trình quản lý gói `conda`) c
      https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
      ```
      (Trang liệt kê đầy đủ các bản: [repo.anaconda.com/miniconda](https://repo.anaconda.com/miniconda/); trang giới thiệu chính thức: [anaconda.com/download](https://www.anaconda.com/download) — kéo xuống mục **Miniconda Installers**.)
-   - Mở file `.exe` vừa tải, cài theo các bước: bấm **Next**, ở **Select Installation Type** chọn **Just Me**, giữ nguyên thư mục cài mặc định (tránh đổi sang đường dẫn có dấu cách hoặc ký tự tiếng Việt có dấu — dễ gây lỗi với các công cụ mã nguồn mở), ở **Advanced Installation Options** giữ nguyên 2 ô tick mặc định, bấm **Install**, đợi xong bấm **Finish**.
+   - Mở file `.exe` vừa tải, cài theo các bước: bấm **Next**, ở **Select Installation Type** chọn **Just Me**, giữ nguyên thư mục cài mặc định (tránh đổi sang đường dẫn có dấu cách hoặc ký tự tiếng Việt có dấu — dễ gây lỗi với các công cụ mã nguồn mở). Ở **Advanced Installation Options**, **tick thêm ô "Add Miniconda3 to my PATH environment variable"** — ô này mặc định KHÔNG được tick (Anaconda khuyên không tick để tránh xung đột với các bản Python khác trên máy), nhưng tick lên thì mới gõ được `conda`/`python` trực tiếp trong Terminal thường như hướng dẫn này dùng xuyên suốt, thay vì phải mở riêng "Anaconda Prompt (miniconda3)" mỗi lần. Giữ nguyên ô còn lại (**Register Miniconda3 as my default Python**) theo mặc định, bấm **Install**, đợi xong bấm **Finish**.
    - Đóng cửa sổ Terminal đang mở (nếu có) và mở **Terminal mới** để PATH vừa được cài đặt cập nhật, sau đó kiểm tra:
      ```
      conda --version
      ```
 
 3. **Tạo và kích hoạt một conda environment.**
-   - Tạo môi trường mới tên `myenv` với Python 3.12 (bản ổn định, được các thư viện AI/ML như `numpy`, `pandas`, PyTorch hỗ trợ đầy đủ tại thời điểm viết bài — sẽ dùng lại ở file `06-ai-ml.md`):
+   - Tạo môi trường mới tên `myenv` với Python 3.13 — lùi lại một bản so với bản mới nhất (3.14, tính tới 9/2026) để tránh các vấn đề tương thích thường gặp ở bản Python vừa ra mắt, trong khi vẫn được các thư viện AI/ML như `numpy`, `pandas`, PyTorch hỗ trợ đầy đủ (sẽ dùng lại ở file `06-ai-ml.md`):
      ```
-     conda create -n myenv python=3.12
+     conda create -n myenv python=3.13
      ```
      Đổi `myenv` thành tên gợi nhớ theo từng dự án thật (ví dụ `ai-project`). Gõ `y` rồi Enter khi được hỏi xác nhận cài các gói cơ bản.
    - Kích hoạt môi trường vừa tạo:
