@@ -20,6 +20,7 @@ $script:OptionalAppGroups = [ordered]@{
         [PSCustomObject]@{ Name = 'Claude Desktop'; WingetId = 'Anthropic.Claude' }
         [PSCustomObject]@{ Name = 'MiKTeX'; WingetId = 'MiKTeX.MiKTeX' }
         [PSCustomObject]@{ Name = 'Trinh duyet (Chrome)'; WingetId = 'Google.Chrome' }
+        [PSCustomObject]@{ Name = 'Bitwarden'; WingetId = 'Bitwarden.Bitwarden' }
     )
     'AI & Productivity' = @(
         [PSCustomObject]@{ Name = 'Python/Miniconda'; WingetId = 'Anaconda.Miniconda3' }

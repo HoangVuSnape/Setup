@@ -225,3 +225,21 @@ Describe 'Format-Summary' {
         ($lines | Where-Object { $_ -like '*Git*' }) | Should -BeNullOrEmpty
     }
 }
+
+Describe 'App data' {
+    It 'includes Bitwarden in the Dev Tools optional group with the correct winget id' {
+        $flat = Get-FlatOptionalApps -Groups $script:OptionalAppGroups
+        $bitwarden = $flat | Where-Object { $_.Name -eq 'Bitwarden' }
+
+        $bitwarden | Should -Not -BeNullOrEmpty
+        $bitwarden.WingetId | Should -Be 'Bitwarden.Bitwarden'
+        $bitwarden.Category | Should -Be 'Dev Tools'
+    }
+
+    It 'has 5 mandatory apps and 12 optional apps across 3 categories' {
+        $script:MandatoryApps.Count | Should -Be 5
+        $flat = Get-FlatOptionalApps -Groups $script:OptionalAppGroups
+        $flat.Count | Should -Be 12
+        ($script:OptionalAppGroups.Keys | Measure-Object).Count | Should -Be 3
+    }
+}
