@@ -97,7 +97,7 @@ Sau bước này, máy Linux chạy Gitea — một Git server nhẹ có giao di
      - **Path**: giữ đường dẫn mặc định do Gitea đề xuất trong `/var/lib/gitea/data`.
      - **Server Domain**: nhập IP hoặc tên máy Linux trong mạng nội bộ.
      - **Gitea Base URL**: nhập `http://<ip-máy-linux>:3000/`.
-     - **SSH Server Port**: nhập `222`. Cổng `22` đã dành cho OpenSSH dùng để SSH quản trị máy Linux.
+     - **SSH Server Port**: nhập `2222`. Cổng `22` đã dành cho OpenSSH dùng để SSH quản trị máy Linux; các cổng dưới `1024` (như `222`) cần quyền root để mở, mà Gitea đang chạy bằng user thường `git` nên sẽ báo lỗi "permission denied" nếu chọn cổng thấp hơn `1024` — `2222` vừa dễ nhớ vừa tránh được vấn đề này.
      - **Gitea HTTP Listen Port**: giữ `3000`.
    - Bấm **Install Gitea** và đợi trang hoàn tất. Lần đầu cài có thể mất một lúc vì Gitea tạo database SQLite và các thư mục cần thiết.
 
@@ -143,5 +143,5 @@ Sau bước này, máy Linux chạy Gitea — một Git server nhẹ có giao di
 - Service báo `permission denied` hoặc tự dừng: kiểm tra lại user `git` sở hữu `/var/lib/gitea` bằng `sudo chown -R git:git /var/lib/gitea/`, sau đó chạy `sudo systemctl restart gitea`.
 - Gitea báo port `3000` đã được sử dụng: xem tiến trình đang dùng port bằng `sudo ss -ltnp | grep ':3000'`, rồi đổi HTTP port trong file `/etc/gitea/app.ini` hoặc dừng service đang chiếm port.
 - Web installer không ghi được cấu hình: tạm đặt lại quyền bằng `sudo chmod 770 /etc/gitea`, chạy lại installer, sau đó nhớ thực hiện bước 7 để khoá quyền.
-- Không clone được bằng SSH: Gitea dùng SSH port `222`, không phải port `22` của OpenSSH hệ thống. Dùng URL SSH do Gitea hiển thị hoặc cấu hình SSH client chỉ rõ port `222`.
+- Không clone được bằng SSH: Gitea dùng SSH port `2222`, không phải port `22` của OpenSSH hệ thống. Dùng URL SSH do Gitea hiển thị hoặc cấu hình SSH client chỉ rõ port `2222`.
 - Binary báo không tương thích: kiểm tra kiến trúc bằng `uname -m`. Máy Intel/AMD 64-bit cần file `linux-amd64`; máy ARM cần chọn file `linux-arm64` tương ứng.
