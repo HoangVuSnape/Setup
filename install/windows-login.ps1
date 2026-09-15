@@ -76,3 +76,21 @@ function ConvertTo-ToggledSelection {
     }
     return [PSCustomObject]@{ State = $state; Warnings = $warnings }
 }
+
+function Format-LoginMenu {
+    param(
+        [object[]]$FlatItems,
+        [bool[]]$SelectionState
+    )
+    $lines = @()
+    $currentCategory = $null
+    foreach ($item in $FlatItems) {
+        if ($item.Category -ne $currentCategory) {
+            $lines += "-- $($item.Category) --"
+            $currentCategory = $item.Category
+        }
+        $mark = if ($SelectionState[$item.Index - 1]) { '[x]' } else { '[ ]' }
+        $lines += " $mark $($item.Index). $($item.Name)"
+    }
+    return $lines
+}

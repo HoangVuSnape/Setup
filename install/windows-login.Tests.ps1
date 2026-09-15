@@ -74,3 +74,20 @@ Describe 'ConvertTo-ToggledSelection' {
         $result.Warnings.Count | Should -Be 0
     }
 }
+
+Describe 'Format-LoginMenu' {
+    It 'renders category headers and checkbox marks, with no mandatory line' {
+        $flat = @(
+            [PSCustomObject]@{ Index = 1; Name = 'GitHub CLI (gh auth login)'; Category = 'Tu dong' }
+            [PSCustomObject]@{ Index = 2; Name = 'Bitwarden'; Category = 'Mo app' }
+        )
+        $state = @($true, $false)
+
+        $lines = Format-LoginMenu -FlatItems $flat -SelectionState $state
+
+        ($lines -join "`n") | Should -BeLike '*-- Tu dong --*'
+        ($lines -join "`n") | Should -BeLike '*`[x`] 1. GitHub CLI (gh auth login)*'
+        ($lines -join "`n") | Should -BeLike '*-- Mo app --*'
+        ($lines -join "`n") | Should -BeLike '*`[ `] 2. Bitwarden*'
+    }
+}
