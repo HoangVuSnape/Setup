@@ -109,3 +109,24 @@ function Format-Menu {
 function Test-WingetAvailable {
     return [bool](Get-Command winget -ErrorAction SilentlyContinue)
 }
+
+function Invoke-Winget {
+    param([string[]]$ArgumentList)
+    & winget @ArgumentList | Out-Null
+    return $LASTEXITCODE
+}
+
+function Test-AppInstalled {
+    param([string]$WingetId)
+    $exitCode = Invoke-Winget -ArgumentList @('list', '--id', $WingetId, '-e')
+    return ($exitCode -eq 0)
+}
+
+function Install-App {
+    param([string]$Name, [string]$WingetId)
+    $exitCode = Invoke-Winget -ArgumentList @('install', '--id', $WingetId, '-e', '--accept-source-agreements', '--accept-package-agreements')
+    if ($exitCode -eq 0) {
+        return [PSCustomObject]@{ Name = $Name; WingetId = $WingetId; Success = $true; Message = 'Cai thanh cong.' }
+    }
+    return [PSCustomObject]@{ Name = $Name; WingetId = $WingetId; Success = $false; Message = "winget tra ve exit code $exitCode." }
+}

@@ -105,3 +105,47 @@ Describe 'Test-WingetAvailable' {
         Test-WingetAvailable | Should -Be $false
     }
 }
+
+Describe 'Test-AppInstalled' {
+    It 'returns true when Invoke-Winget reports exit code 0' {
+        Mock Invoke-Winget { return 0 }
+        Test-AppInstalled -WingetId 'Git.Git' | Should -Be $true
+    }
+
+    It 'returns false when Invoke-Winget reports a non-zero exit code' {
+        Mock Invoke-Winget { return 1 }
+        Test-AppInstalled -WingetId 'Git.Git' | Should -Be $false
+    }
+
+    It 'calls winget list with the exact id and -e flag' {
+        Mock Invoke-Winget { return 0 }
+        Test-AppInstalled -WingetId 'Git.Git' | Out-Null
+        Should -Invoke Invoke-Winget -ParameterFilter {
+            $ArgumentList -join ',' -eq 'list,--id,Git.Git,-e'
+        }
+    }
+}
+
+Describe 'Install-App' {
+    It 'returns Success=$true when Invoke-Winget reports exit code 0' {
+        Mock Invoke-Winget { return 0 }
+        $result = Install-App -Name 'Git' -WingetId 'Git.Git'
+        $result.Success | Should -Be $true
+        $result.Name | Should -Be 'Git'
+    }
+
+    It 'returns Success=$false with the exit code in the message on failure' {
+        Mock Invoke-Winget { return 1603 }
+        $result = Install-App -Name 'Git' -WingetId 'Git.Git'
+        $result.Success | Should -Be $false
+        $result.Message | Should -BeLike '*1603*'
+    }
+
+    It 'calls winget install with agreement-acceptance flags' {
+        Mock Invoke-Winget { return 0 }
+        Install-App -Name 'Git' -WingetId 'Git.Git' | Out-Null
+        Should -Invoke Invoke-Winget -ParameterFilter {
+            $ArgumentList -contains '--accept-source-agreements' -and $ArgumentList -contains '--accept-package-agreements'
+        }
+    }
+}
