@@ -13,6 +13,10 @@ Vì vậy "tự động hoá đăng nhập an toàn" ở đây chỉ có thể l
 
 Script **không bao giờ**: hỏi/nhận password qua `Read-Host`, lưu bất kỳ giá trị nào vào file/biến môi trường, đoán/điền form đăng nhập bằng UI automation.
 
+**Mã 2FA/TOTP cũng nằm trong giới hạn này.** Mã 2FA (kể cả tạo bằng Bitwarden) là một dạng thông tin xác thực — script sẽ không bao giờ đọc, tạo hộ, hay tự điền mã 2FA. Người dùng luôn tự gõ mã khi được yêu cầu, đúng bản chất của 2FA là lớp bảo vệ thêm không nên tự động hoá.
+
+*(Ghi chú: Authy — app 2FA user có nhắc tới — đã ngừng hỗ trợ bản desktop từ 2024, chỉ còn app điện thoại, không có gói winget nào để cài trên Windows. Bitwarden đã có sẵn tính năng tạo mã TOTP tích hợp, nên không cần thêm app 2FA nào khác vào `windows-setup.ps1`.)*
+
 ## 1. Mục tiêu
 
 Sau khi `windows-setup.ps1` cài xong các app, người dùng cần đăng nhập vào một số dịch vụ trước khi dùng được đầy đủ (GitHub, Docker Hub, Claude, Discord, Zalo...). Script này giúp **kích hoạt đúng bước đăng nhập** cho từng app đã cài, theo đúng cơ chế an toàn nhất mà chính app/dịch vụ đó cung cấp — không phải mình tự chế ra cách đăng nhập.
@@ -29,6 +33,7 @@ Sau khi `windows-setup.ps1` cài xong các app, người dùng cần đăng nh�
 | Zalo | QR code tương tự (theo hiểu biết chung — sẽ xác nhận lại chi tiết chính xác lúc code thật) | Chỉ mở app + nhắc dùng QR |
 | DataGrip | JetBrains Account qua trình duyệt, chỉ cần nếu muốn dùng bản quyền đầy đủ (có thể dùng thử không cần đăng nhập) | Chỉ mở app + nhắc, ghi rõ là **tùy chọn** |
 | VS Code | Đăng nhập GitHub/Microsoft chỉ cần cho Settings Sync, không bắt buộc để dùng | Chỉ mở app + nhắc, ghi rõ là **tùy chọn** |
+| **Bitwarden** | Đăng nhập/tạo tài khoản Bitwarden qua giao diện app riêng (email + master password bạn tự đặt, mình không đụng vào) | Chỉ mở app + nhắc |
 | Git, 7-Zip, Windows Terminal, MiKTeX, Python/Miniconda, OBS Studio, Chrome, Obsidian | Không có khái niệm "đăng nhập" cần thiết cho việc dùng cơ bản (Chrome/Obsidian có sync tùy chọn nhưng không cần cho use case hiện tại) | **Không đưa vào script này** |
 
 ## 3. Kiến trúc
@@ -65,6 +70,7 @@ Menu chọn giống hệt UX của `windows-setup.ps1` (gõ số để tick/bỏ
  [ ] 6. Zalo (dung QR code tren dien thoai - nhanh nhat)
  [ ] 7. DataGrip (tuy chon - chi can neu muon ban quyen day du)
  [ ] 8. VS Code (tuy chon - chi can neu muon Settings Sync)
+ [ ] 9. Bitwarden (dang nhap/tao tai khoan lan dau)
 
 Go so de tick/bo chon, 'all' de chon het, Enter rong de xac nhan.
 > 1,2,5
@@ -98,4 +104,4 @@ Tương tự `windows-setup.ps1`: phần logic thuần (menu, chọn item) viế
 
 - Đồng ý tách file riêng (`windows-login.ps1`) thay vì gộp vào `windows-setup.ps1`?
 - Đồng ý bỏ MiKTeX/Python/OBS/Chrome/Obsidian ra khỏi danh sách (không có nhu cầu đăng nhập thật)?
-- Danh sách 8 mục ở §2 đã đủ chưa, hay có app/dịch vụ nào khác bạn muốn thêm (ví dụ: đăng nhập Windows bằng Microsoft Account, license Windows...)?
+- Danh sách 9 mục ở §2 đã đủ chưa, hay có app/dịch vụ nào khác bạn muốn thêm (ví dụ: đăng nhập Windows bằng Microsoft Account, license Windows...)?
