@@ -74,3 +74,22 @@ Describe 'ConvertTo-ToggledSelection' {
         $result.Warnings.Count | Should -Be 0
     }
 }
+
+Describe 'Format-Menu' {
+    It 'renders mandatory line, category headers, and checkbox marks' {
+        $mandatory = @([PSCustomObject]@{ Name = 'Git'; WingetId = 'Git.Git' })
+        $flat = @(
+            [PSCustomObject]@{ Index = 1; Name = 'VS Code'; WingetId = 'X'; Category = 'Dev Tools' }
+            [PSCustomObject]@{ Index = 2; Name = 'Obsidian'; WingetId = 'Y'; Category = 'AI & Productivity' }
+        )
+        $state = @($true, $false)
+
+        $lines = Format-Menu -FlatOptionalApps $flat -SelectionState $state -MandatoryApps $mandatory
+
+        $lines[0] | Should -BeLike '*Git*'
+        ($lines -join "`n") | Should -BeLike '*-- Dev Tools --*'
+        ($lines -join "`n") | Should -BeLike '*`[x`] 1. VS Code*'
+        ($lines -join "`n") | Should -BeLike '*-- AI & Productivity --*'
+        ($lines -join "`n") | Should -BeLike '*`[ `] 2. Obsidian*'
+    }
+}

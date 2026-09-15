@@ -84,3 +84,24 @@ function ConvertTo-ToggledSelection {
     }
     return [PSCustomObject]@{ State = $state; Warnings = $warnings }
 }
+
+function Format-Menu {
+    param(
+        [object[]]$FlatOptionalApps,
+        [bool[]]$SelectionState,
+        [object[]]$MandatoryApps
+    )
+    $lines = @()
+    $lines += "Se tu cai (khong can chon): $(($MandatoryApps | ForEach-Object { $_.Name }) -join ', ')"
+    $lines += ''
+    $currentCategory = $null
+    foreach ($app in $FlatOptionalApps) {
+        if ($app.Category -ne $currentCategory) {
+            $lines += "-- $($app.Category) --"
+            $currentCategory = $app.Category
+        }
+        $mark = if ($SelectionState[$app.Index - 1]) { '[x]' } else { '[ ]' }
+        $lines += " $mark $($app.Index). $($app.Name)"
+    }
+    return $lines
+}
