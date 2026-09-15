@@ -93,3 +93,15 @@ Describe 'Format-Menu' {
         ($lines -join "`n") | Should -BeLike '*`[ `] 2. Obsidian*'
     }
 }
+
+Describe 'Test-WingetAvailable' {
+    It 'returns true when the winget command is found' {
+        Mock Get-Command { return [PSCustomObject]@{ Name = 'winget' } } -ParameterFilter { $Name -eq 'winget' }
+        Test-WingetAvailable | Should -Be $true
+    }
+
+    It 'returns false when the winget command is missing' {
+        Mock Get-Command { return $null } -ParameterFilter { $Name -eq 'winget' }
+        Test-WingetAvailable | Should -Be $false
+    }
+}

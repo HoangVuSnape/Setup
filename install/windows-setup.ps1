@@ -105,3 +105,7 @@ function Format-Menu {
     }
     return $lines
 }
+
+function Test-WingetAvailable {
+    return [bool](Get-Command winget -ErrorAction SilentlyContinue)
+}
