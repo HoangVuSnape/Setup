@@ -165,3 +165,46 @@ function Format-LoginSummary {
     }
     return $lines
 }
+
+function Main {
+    param([switch]$DryRun)
+
+    $flatItems = Get-FlatLoginItems -Groups $script:LoginItemGroups
+    $state = New-Object bool[] $flatItems.Count
+
+    while ($true) {
+        Write-Host ''
+        (Format-LoginMenu -FlatItems $flatItems -SelectionState $state) | ForEach-Object { Write-Host $_ }
+        Write-Host ''
+        $line = Read-Host "Go so de tick/bo chon (vd: 1,3,7), go 'all' de chon het, Enter rong de xac nhan"
+        if ($line.Trim() -eq '') { break }
+        $toggled = ConvertTo-ToggledSelection -CurrentState $state -InputLine $line
+        $state = $toggled.State
+        foreach ($w in $toggled.Warnings) { Write-Host $w -ForegroundColor Yellow }
+    }
+
+    $selectedItems = @()
+    for ($i = 0; $i -lt $flatItems.Count; $i++) {
+        if ($state[$i]) { $selectedItems += $flatItems[$i] }
+    }
+
+    if ($selectedItems.Count -eq 0) {
+        Write-Host 'Chua chon gi. Da huy.'
+        return
+    }
+
+    Write-Host ''
+    Write-Host "Se kich hoat: $(($selectedItems | ForEach-Object { $_.Name }) -join ', ')"
+    $confirm = Read-Host 'Xac nhan kich hoat? (y/n)'
+    if ($confirm -notin @('y', 'Y')) {
+        Write-Host 'Da huy.'
+        return
+    }
+
+    $results = Invoke-LoginPlan -Items $selectedItems -DryRun:$DryRun
+    (Format-LoginSummary -Results $results) | ForEach-Object { Write-Host $_ }
+}
+
+if (-not $env:PESTER_TESTING) {
+    Main -DryRun:$DryRun
+}
