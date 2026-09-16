@@ -11,7 +11,7 @@ Sau bước này, máy có một bản Windows 11 sạch, đã cập nhật đ�
    - Chỉ khi máy trống hoàn toàn (máy mới mua chưa cài OS, hoặc chủ động muốn xoá sạch ổ đĩa và cài lại) thì mới cần làm bước 2 và 3.
 
 2. **(Chỉ khi cài mới) Tạo USB cài đặt bằng Media Creation Tool.**
-   - Chuẩn bị một USB rỗng dung lượng tối thiểu 8GB — toàn bộ dữ liệu trên USB sẽ bị xoá.
+   - Chuẩn bị một USB rỗng dung lượng tối thiểu 8GB, nên dùng 16GB trở lên chuẩn USB 3.0 — xem hướng dẫn chọn USB đầy đủ tại [docs/common/chon-usb-boot.md](../common/chon-usb-boot.md). Toàn bộ dữ liệu trên USB sẽ bị xoá khi tạo bộ cài.
    - Vào trang tải chính thức của Microsoft: `https://www.microsoft.com/software-download/windows11`, tìm mục **"Create Windows 11 Installation Media"** và tải Media Creation Tool.
    - Chạy file `.exe` vừa tải, chọn **"Create installation media (USB flash drive, DVD, or ISO file) for another PC"**, chọn ổ USB, để tool tự tải bản Windows 11 mới nhất và ghi vào USB.
    - Lưu ý điều kiện tối thiểu để cài được Windows 11: máy phải có TPM 2.0, Secure Boot bật trong BIOS/UEFI, và CPU nằm trong danh sách được hỗ trợ — Microsoft không nới lỏng yêu cầu này.

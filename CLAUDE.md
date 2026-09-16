@@ -24,6 +24,7 @@ Dự án này là kho tài liệu **cá nhân** hướng dẫn setup lại 2 má
 
 ```
 docs/
+├── common/    (nội dung dùng chung cho cả 2 máy, không đánh số/không có checklist riêng)
 ├── windows/   (00-checklist.md + 01..06 theo thứ tự cài đặt)
 └── linux/     (00-checklist.md + 01..04 + 05-self-hosting/)
 ```

@@ -14,7 +14,7 @@ Sau bước này, máy cũ có một bản Linux Mint XFCE Edition (phiên bản
    - (Tuỳ chọn, nên làm) Kiểm tra file ISO tải về không bị lỗi/giả mạo bằng SHA256 checksum: trang download có link tới file `sha256sum.txt` — so khớp mã checksum của file vừa tải với mã trong file này.
 
 2. **Chuẩn bị USB rỗng và tạo USB boot bằng Rufus (làm trên máy Windows).**
-   - Chuẩn bị 1 USB dung lượng tối thiểu 4GB (ISO nặng ~2.8GB) — toàn bộ dữ liệu trên USB sẽ bị xoá sạch.
+   - Chuẩn bị 1 USB dung lượng tối thiểu 4GB (ISO nặng ~2.8GB), nhưng nên dùng USB 16GB trở lên chuẩn USB 3.0 để dùng chung được cho cả việc cài Windows sau này — xem hướng dẫn chọn USB đầy đủ tại [docs/common/chon-usb-boot.md](../common/chon-usb-boot.md). Toàn bộ dữ liệu trên USB sẽ bị xoá sạch khi tạo bộ cài.
    - Tải Rufus (bản portable, không cần cài) tại trang chính thức: `https://rufus.ie`.
    - Chạy file `.exe` vừa tải (bấm **Yes** nếu Windows hỏi UAC). Trong cửa sổ Rufus:
      - Mục **Device**: chọn đúng USB vừa cắm vào (kiểm tra kỹ dung lượng hiển thị để chắc chắn không chọn nhầm ổ đĩa khác).
