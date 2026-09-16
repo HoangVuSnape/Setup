@@ -91,3 +91,132 @@ Describe 'Format-LoginMenu' {
         ($lines -join "`n") | Should -BeLike '*`[ `] 2. Bitwarden*'
     }
 }
+
+Describe 'Find-StartMenuShortcut' {
+    It 'returns the first matching .lnk file found' {
+        Mock Test-Path { return $true }
+        Mock Get-ChildItem {
+            return [PSCustomObject]@{ FullName = 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Bitwarden.lnk' }
+        }
+
+        $result = Find-StartMenuShortcut -SearchTerm 'Bitwarden'
+        $result.FullName | Should -Be 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Bitwarden.lnk'
+    }
+
+    It 'returns $null when no shortcut matches' {
+        Mock Test-Path { return $true }
+        Mock Get-ChildItem { return $null }
+
+        Find-StartMenuShortcut -SearchTerm 'NoSuchApp' | Should -BeNullOrEmpty
+    }
+
+    It 'skips a search path that does not exist without throwing' {
+        Mock Test-Path { return $false }
+        Mock Get-ChildItem { throw 'should not be called for a nonexistent path' }
+
+        { Find-StartMenuShortcut -SearchTerm 'Bitwarden' } | Should -Not -Throw
+    }
+}
+
+Describe 'Start-LoginApp' {
+    It 'launches the shortcut and reports Launched=$true when found' {
+        Mock Find-StartMenuShortcut { return [PSCustomObject]@{ FullName = 'C:\path\Bitwarden.lnk' } }
+        Mock Start-Process { }
+
+        $result = Start-LoginApp -Name 'Bitwarden' -SearchTerm 'Bitwarden'
+
+        $result.Launched | Should -Be $true
+        $result.Name | Should -Be 'Bitwarden'
+        Should -Invoke Start-Process -ParameterFilter { $FilePath -eq 'C:\path\Bitwarden.lnk' }
+    }
+
+    It 'reports Launched=$false with a manual-open hint when no shortcut is found' {
+        Mock Find-StartMenuShortcut { return $null }
+        Mock Start-Process { throw 'should not be called when no shortcut found' }
+
+        $result = Start-LoginApp -Name 'Bitwarden' -SearchTerm 'Bitwarden'
+
+        $result.Launched | Should -Be $false
+        $result.Message | Should -BeLike '*Start Menu*'
+    }
+}
+
+Describe 'Invoke-CliLogin' {
+    It 'calls Invoke-ExternalCommand with the exact command and args, and reports Launched=$true' {
+        Mock Invoke-ExternalCommand { }
+
+        $result = Invoke-CliLogin -Name 'GitHub CLI (gh auth login)' -Command 'gh' -ArgumentList @('auth', 'login')
+
+        $result.Launched | Should -Be $true
+        $result.Name | Should -Be 'GitHub CLI (gh auth login)'
+        Should -Invoke Invoke-ExternalCommand -ParameterFilter {
+            $Command -eq 'gh' -and ($ArgumentList -join ',') -eq 'auth,login'
+        }
+    }
+}
+
+Describe 'Invoke-LoginItem' {
+    It 'dispatches Type=Cli items to Invoke-CliLogin' {
+        Mock Invoke-CliLogin { return [PSCustomObject]@{ Name = 'x'; Launched = $true; Message = 'cli' } }
+        Mock Start-LoginApp { throw 'should not be called for a Cli item' }
+
+        $item = [PSCustomObject]@{ Name = 'x'; Type = 'Cli'; Command = 'gh'; ArgumentList = @('auth', 'login') }
+        $result = Invoke-LoginItem -Item $item
+
+        $result.Message | Should -Be 'cli'
+        Should -Invoke Invoke-CliLogin -Times 1
+    }
+
+    It 'dispatches Type=App items to Start-LoginApp' {
+        Mock Start-LoginApp { return [PSCustomObject]@{ Name = 'y'; Launched = $true; Message = 'app' } }
+        Mock Invoke-CliLogin { throw 'should not be called for an App item' }
+
+        $item = [PSCustomObject]@{ Name = 'y'; Type = 'App'; SearchTerm = 'Bitwarden' }
+        $result = Invoke-LoginItem -Item $item
+
+        $result.Message | Should -Be 'app'
+        Should -Invoke Start-LoginApp -Times 1
+    }
+}
+
+Describe 'Invoke-LoginPlan' {
+    BeforeAll {
+        $script:loginItems = @(
+            [PSCustomObject]@{ Name = 'Item1'; Type = 'Cli'; Command = 'gh'; ArgumentList = @('auth', 'login') }
+            [PSCustomObject]@{ Name = 'Item2'; Type = 'App'; SearchTerm = 'Bitwarden' }
+        )
+    }
+
+    It 'calls Invoke-LoginItem for each item when not in DryRun' {
+        Mock Invoke-LoginItem { param($Item) return [PSCustomObject]@{ Name = $Item.Name; Launched = $true; Message = 'real' } }
+
+        $results = Invoke-LoginPlan -Items $script:loginItems
+        $results.Count | Should -Be 2
+        $results | ForEach-Object { $_.Message | Should -Be 'real' }
+        Should -Invoke Invoke-LoginItem -Times 2
+    }
+
+    It 'in DryRun mode marks every item as simulated without calling Invoke-LoginItem' {
+        Mock Invoke-LoginItem { throw 'should not be called in DryRun' }
+
+        $results = Invoke-LoginPlan -Items $script:loginItems -DryRun
+        $results.Count | Should -Be 2
+        $results | ForEach-Object { $_.Message | Should -BeLike '*DRY RUN*' }
+    }
+}
+
+Describe 'Format-LoginSummary' {
+    It 'lists every item with its message, and counts how many launched' {
+        $results = @(
+            [PSCustomObject]@{ Name = 'GitHub CLI (gh auth login)'; Launched = $true; Message = 'Da chay lenh - lam theo huong dan tren man hinh/trinh duyet.' }
+            [PSCustomObject]@{ Name = 'Bitwarden'; Launched = $false; Message = "Khong tim thay shortcut tu dong. Hay tu mo 'Bitwarden' tu Start Menu va dang nhap." }
+        )
+
+        $lines = Format-LoginSummary -Results $results
+        $joined = $lines -join "`n"
+
+        $joined | Should -BeLike '*1/2 da kich hoat tu dong*'
+        $joined | Should -BeLike '*GitHub CLI*lam theo huong dan*'
+        $joined | Should -BeLike '*Bitwarden*Start Menu*'
+    }
+}
