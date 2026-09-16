@@ -20,6 +20,20 @@ Muốn xem trước sẽ cài gì mà không cài thật (chế độ thử):
 & ([ScriptBlock]::Create((irm https://raw.githubusercontent.com/HoangVuSnape/Setup/master/install/windows-setup.ps1))) -DryRun
 ```
 
+### Kích hoạt đăng nhập (sau khi cài xong app)
+
+Script này **không bao giờ** đụng vào password/token/mã 2FA của bạn — chỉ mở đúng cơ chế đăng nhập chính thức của từng app (trình duyệt/QR code), hoặc mở app lên để bạn tự đăng nhập. Chạy sau khi đã cài app bằng `windows-setup.ps1`:
+
+```powershell
+irm https://raw.githubusercontent.com/HoangVuSnape/Setup/master/install/windows-login.ps1 | iex
+```
+
+Muốn xem trước sẽ kích hoạt gì mà không mở app/trình duyệt thật (chế độ thử):
+
+```powershell
+& ([ScriptBlock]::Create((irm https://raw.githubusercontent.com/HoangVuSnape/Setup/master/install/windows-login.ps1))) -DryRun
+```
+
 ## Máy Linux (Mint XFCE, self-host server)
 
 Bắt đầu tại [docs/linux/00-checklist.md](docs/linux/00-checklist.md).
