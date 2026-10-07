@@ -2,54 +2,115 @@
 
 ## Mục tiêu
 
-Sau bước này, máy đã bật WSL2 (chạy nhân Linux thật ngay bên trong Windows) và cài xong Docker Desktop dùng WSL2 backend, đã chạy thử container đầu tiên thành công để xác nhận mọi thứ hoạt động đúng.
+Sau bước này, máy đã bật WSL2 (Ubuntu), cấu hình kernel mới nhất, cập nhật gói Linux cơ bản, cài đặt Docker Desktop với WSL2 backend, kiểm tra chạy Docker thành công từ cả Windows và bên trong Ubuntu, và cấu hình giới hạn RAM để tránh Docker làm tràn bộ nhớ máy.
 
 ## Các bước
 
-1. **WSL2 là gì, Docker là gì — vì sao cần?**
-   - WSL2 (Windows Subsystem for Linux, bản 2) cho chạy một bản Linux thật (dùng đúng nhân/kernel Linux, không phải giả lập) ngay bên trong Windows, không cần cài song song 2 hệ điều hành (dual-boot) hay dựng máy ảo nặng nề. Nhiều công cụ lập trình/AI (nhất là Docker container, một số thư viện AI/ML sẽ dùng ở file `06-ai-ml.md`) chạy mượt và ổn định hơn trên Linux — bật WSL2 giúp có sẵn môi trường đó ngay trên máy Windows đang dùng.
-   - Docker là công cụ đóng gói một ứng dụng cùng toàn bộ môi trường nó cần (thư viện, cấu hình...) vào một "hộp" độc lập gọi là container, chạy ra kết quả giống hệt nhau trên bất kỳ máy nào có Docker — hữu ích khi thử các dự án AI/ML hoặc dịch vụ self-host có yêu cầu môi trường phức tạp, khỏi lo cài đè/xung đột lên máy thật. Trên Windows, Docker Desktop chạy container thông qua WSL2 (thay cho công nghệ ảo hoá Hyper-V cũ) — vì vậy cần bật WSL2 trước khi cài Docker.
-
-2. **Bật WSL2.**
-   - Mở **PowerShell as Administrator**: bấm Start, gõ `PowerShell` (hoặc `Terminal`), chuột phải vào kết quả → **Run as administrator**.
-   - Chạy:
+1. **Kiểm tra phần cứng ảo hóa (Virtualization) trước khi cài.**
+   - Mở Task Manager (`Ctrl + Shift + Esc`) > tab **Performance** > mục **CPU** > nhìn góc dưới bên phải: dòng **Virtualization** phải báo **Enabled**.
+   - Hoặc kiểm tra qua [PowerShell - Windows]:
+     ```powershell
+     Get-ComputerInfo | Select-Object HyperVisorPresent
      ```
+   - *Nếu báo Disabled:* Bạn bắt buộc phải vào BIOS/UEFI khi khởi động máy (phím F2/Del) để bật **Intel Virtualization Technology (Intel VT-x)** hoặc **AMD-V / SVM Mode**.
+
+2. **Cài đặt và cập nhật WSL2.**
+   - Mở **PowerShell với quyền Administrator** (chuột phải nút Start > Terminal (Admin)):
+     ```powershell
      wsl --install
+     wsl --update
+     wsl --set-default-version 2
      ```
-     Lệnh này tự bật các tính năng Windows cần thiết cho WSL và cài sẵn bản Linux mặc định hiện tại là **Ubuntu** (muốn đổi sang distro khác như Debian: xem danh sách bằng `wsl --list --online`, rồi cài bằng `wsl --install -d <TênDistro>`).
-   - Khởi động lại máy khi được yêu cầu.
-   - Sau khi máy khởi động lại, mở **Ubuntu** từ Start Menu (thường tự mở luôn) — lần đầu cần đợi vài phút để giải nén, sau đó được hỏi tạo **username** và **password** riêng cho Linux (khác tài khoản Windows; khi gõ password sẽ không thấy ký tự nào hiện lên trên màn hình — vẫn đang gõ bình thường, không phải máy bị treo).
+   - Khởi động lại máy tính khi Windows yêu cầu.
 
-3. **Kiểm tra WSL2 đã bật đúng.**
-   ```
-   wsl --list --verbose
-   ```
-   Cột **VERSION** của distro vừa cài (vd `Ubuntu`) phải là `2`. Nếu ra `1`, chuyển bằng:
-   ```
-   wsl --set-version Ubuntu 2
-   ```
+3. **Khởi tạo Ubuntu và cập nhật hệ điều hành Linux.**
+   - Sau khi khởi động lại, bấm Start mở ứng dụng **Ubuntu**. Lần đầu mở sẽ mất 1–2 phút giải nén.
+   - Thiết lập **username** và **password** cho Ubuntu (lưu ý khi gõ password Linux sẽ không hiển thị ký tự lên màn hình, cứ gõ đúng và Enter).
+   - **Cập nhật hệ thống và cài các công cụ dòng lệnh cơ bản:**
+     - [Ubuntu - WSL2]:
+       ```bash
+       sudo apt update && sudo apt upgrade -y
+       sudo apt install -y git curl wget build-essential unzip
+       ```
 
-4. **Cài Docker Desktop.**
-   - Mở Terminal thường (không cần quyền Administrator), chạy:
+4. **Kiểm tra trạng thái WSL2 trên Windows.**
+   - Mở Windows Terminal mới (PowerShell thường):
+     - [PowerShell - Windows]:
+       ```powershell
+       wsl --status
+       wsl --list --verbose
+       ```
+       *(Cột **VERSION** của Ubuntu phải là **2**. Distro mặc định có dấu `*` bên cạnh).*
+
+5. **Cấu hình giới hạn tài nguyên máy cho WSL2 (`.wslconfig`).**
+   - WSL2 mặc định có thể tự động chiếm dụng tới 50% - 80% dung lượng RAM của máy nếu không được giới hạn. Với máy có 16GB RAM học AI/ML, nên giới hạn WSL2 tối đa 6GB–8GB RAM để chừa tài nguyên cho Windows và GPU.
+   - [PowerShell - Windows]: Tạo file cấu hình:
+     ```powershell
+     @"
+     [wsl2]
+     memory=8GB
+     processors=4
+     swap=4GB
+     "@ | Out-File -FilePath "$env:USERPROFILE\.wslconfig" -Encoding utf8
      ```
+   - Khởi động lại WSL để áp dụng:
+     ```powershell
+     wsl --shutdown
+     ```
+
+6. **Cài đặt Docker Desktop và kích hoạt WSL Integration.**
+   - [PowerShell - Windows]:
+     ```powershell
      winget install --id Docker.DockerDesktop -e
      ```
-   - Cài xong, mở app **Docker Desktop** từ Start Menu. Lần đầu mở sẽ hiện màn hình **Docker Subscription Service Agreement** — bấm **Accept**. Sau đó có màn hình mời đăng nhập Docker Hub — bước này **không bắt buộc** cho nhu cầu cá nhân, có thể bỏ qua (tìm nút dạng "Skip"/đóng cửa sổ đó lại).
-   - Xác nhận Docker đang dùng WSL2 backend: bấm icon **bánh răng (Settings)** ở góc trên bên phải cửa sổ Docker Desktop → mục **General** (sidebar trái) → tìm ô **"Use WSL 2 based engine"**. Trên máy đã bật WSL2 đúng như bước 2–3, Docker Desktop tự bật sẵn tuỳ chọn này — **ô này có thể không hiện ra ở đó luôn** (không phải chỉ mờ đi) vì đã là mặc định bắt buộc trên máy hỗ trợ WSL2, không thấy ô này là bình thường chứ không phải lỗi. Muốn xem/chỉnh distro nào đang được Docker tích hợp, vào thêm **Settings → Resources → WSL Integration**. Nếu ô này hiện ra nhưng bị **mờ kèm theo Docker báo lỗi** (không phải chỉ đơn giản là "ẩn/không thấy"), thử chạy `wsl --update` trong PowerShell rồi khởi động lại Docker Desktop — dấu hiệu WSL2 đang gặp vấn đề thật, không phải chỉ là "trạng thái mặc định".
+   - Cài xong, mở app **Docker Desktop** từ Start Menu. Bấm **Accept** ở màn hình thỏa thuận bản quyền.
+   - **Kích hoạt tích hợp với Ubuntu:**
+     - Trong Docker Desktop, bấm icon **Bánh răng (Settings)** ở góc trên phải.
+     - Vào **General**: đảm bảo đã bật *"Use the WSL 2 based engine"*.
+     - Vào **Resources > WSL Integration**: gạt bật **Enable integration with additional distros** cho `Ubuntu`.
+     - Bấm **Apply & restart**.
 
-5. **Kiểm tra Docker hoạt động.**
-   ```
-   docker run hello-world
-   ```
+   > [!NOTE]
+   > Không cài thêm Docker Engine trực tiếp bên trong Ubuntu bằng lệnh `apt install docker` để tránh xung đột hai daemon Docker cùng lúc. Docker Desktop đã tự động tích hợp lệnh `docker` vào thẳng Ubuntu.
+
+7. **Kiểm tra Docker hoạt động từ cả hai môi trường.**
+   - [PowerShell - Windows]:
+     ```powershell
+     docker version
+     docker run hello-world
+     ```
+   - [Ubuntu - WSL2]: Mở Ubuntu terminal và chạy thử:
+     ```bash
+     docker version
+     docker run hello-world
+     ```
+     *(Cả 2 môi trường đều in ra thông điệp `Hello from Docker!` là thành công hoàn hảo).*
+
+8. **Quản lý dung lượng và dọn dẹp Docker định kỳ.**
+   - Khi build và tải image Docker về học tập, ổ cứng C có thể bị đầy nhanh chóng.
+   - [PowerShell - Windows]: Kiểm tra dung lượng Docker đang chiếm:
+     ```powershell
+     docker system df
+     ```
+   - Dọn dẹp cache và các container/image không còn dùng:
+     ```powershell
+     docker system prune
+     ```
+     *(Gõ `y` để xác nhận. Lưu ý lệnh này sẽ xóa các container đã dừng, network rác và build cache).*
+
+---
 
 ## ✅ Kiểm tra đã thành công
 
-- `wsl --list --verbose` hiện distro (vd `Ubuntu`) với cột `VERSION` = `2`.
-- Docker Desktop mở được, icon con cá voi (whale) ở khay hệ thống (system tray, góc dưới phải màn hình cạnh đồng hồ) ở trạng thái đang chạy, không báo lỗi.
-- `docker run hello-world` in ra đoạn text bắt đầu bằng `Hello from Docker!`, không báo lỗi kết nối.
+- `wsl --list --verbose` hiển thị Ubuntu chạy Version 2.
+- `docker run hello-world` chạy thành công mượt mà cả trên PowerShell và bên trong Ubuntu WSL.
+- Icon cá voi của Docker Desktop ở khay hệ thống chuyển sang màu xanh (Running).
+
+---
 
 ## ⚠️ Lỗi thường gặp
 
-- Chạy `wsl --install` mà không thấy cài gì, chỉ hiện ra đoạn hướng dẫn sử dụng (help text): nghĩa là WSL đã được cài từ trước trên máy. Dùng `wsl --list --verbose` để xem distro hiện có, hoặc `wsl --install -d <TênDistro>` để cài thêm distro khác nếu cần.
-- Mở Docker Desktop báo lỗi liên quan đến ảo hoá (virtualization), ví dụ nhắc tới Hyper-V/WSL2 không khả dụng: cần vào BIOS/UEFI của máy bật **Intel VT-x** hoặc **AMD-V** (tên gọi tuỳ hãng mainboard) — đây là điều kiện phần cứng bắt buộc để chạy WSL2/Docker, không thể tự bật được từ trong Windows.
-- `docker run hello-world` báo lỗi không kết nối được tới Docker Engine (dạng "Cannot connect to the Docker daemon"): app Docker Desktop chưa mở hoặc chưa khởi động xong — mở app, đợi icon cá voi hết trạng thái "starting" rồi chạy lại lệnh.
+- **Ubuntu không nhận lệnh `docker`:** Kiểm tra xem Docker Desktop đã chạy chưa, và vào Settings > Resources > WSL Integration đã gạt bật công tắc cho Ubuntu chưa.
+- **Docker Desktop báo lỗi "Virtualization not enabled":** Ảo hóa chưa được bật trong BIOS/UEFI. Cần restart máy vào BIOS bật VT-x/AMD-V.
+- **Máy bị đơ/lag sau khi chạy Docker một thời gian:** Do WSL2 chiếm hết RAM. Đảm bảo bạn đã tạo file `$env:USERPROFILE\.wslconfig` ở Bước 5 và chạy `wsl --shutdown` để áp dụng giới hạn RAM.
+

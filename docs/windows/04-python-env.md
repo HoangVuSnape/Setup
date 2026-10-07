@@ -1,84 +1,117 @@
-# Cài Python qua Miniconda (conda) và virtual environment (venv)
+# Cài Python qua Miniconda (conda), uv và quản lý môi trường ảo
 
 ## Mục tiêu
 
-Sau bước này, máy có Miniconda (Python + trình quản lý gói `conda`) cài sẵn, biết tạo và kích hoạt một "môi trường ảo" (virtual environment) riêng cho từng dự án Python — bằng `conda` hoặc bằng `venv` chuẩn có sẵn trong Python — và đã cài thử được 2 thư viện cơ bản (`numpy`, `pandas`) để kiểm tra mọi thứ hoạt động đúng.
+Sau bước này, máy có môi trường Python chuẩn không bị xung đột PATH, biết dùng `conda` hoặc `uv`/`venv` để tạo môi trường ảo độc lập (`ai-env`) sử dụng **Python 3.11** (phiên bản ổn định và tương thích cao nhất cho AI/ML), dùng cú pháp an toàn `python -m pip`, và quản lý thư viện qua `requirements.txt`.
 
 ## Các bước
 
-1. **Vì sao cần "virtual environment" (môi trường ảo)?**
-   - Mỗi dự án Python thường cần các phiên bản thư viện khác nhau — ví dụ dự án A cần `numpy` bản cũ, dự án B lại cần `numpy` bản mới hơn (có hàm mới, bỏ hàm cũ). Nếu cài tất cả thẳng vào **một** bản Python duy nhất của máy (gọi là môi trường "global"/"base"), bản cài sau sẽ đè lên bản trước — cập nhật thư viện cho dự án mới có thể làm hỏng dự án cũ.
-   - "Virtual environment" giải quyết việc này bằng cách tạo ra các "bản sao Python" độc lập với nhau, mỗi bản có bộ thư viện riêng — cài, gỡ, nâng cấp thư viện trong môi trường này không ảnh hưởng tới môi trường khác hay bản Python gốc của máy.
-   - Có 2 cách phổ biến để tạo môi trường ảo trên Windows, hướng dẫn dưới đây có cả 2, **chỉ cần chọn 1**:
-     - **conda** (đi kèm Miniconda) — phổ biến trong giới AI/ML, quản lý được cả nhiều phiên bản Python khác nhau chứ không chỉ thư viện. **Khuyến nghị dùng cách này** vì các bước sau (WSL2/Docker, PyTorch, Jupyter ở file `06-ai-ml.md`) sẽ dùng conda environment.
-     - **venv** — module có sẵn trong Python, không cần cài thêm gì ngoài chính Python, gọn nhẹ hơn.
+1. **Vì sao cần "virtual environment" và không nên cài gói toàn cục?**
+   - Các dự án AI/ML thường sử dụng các phiên bản thư viện rất khắt khe (ví dụ: PyTorch 2.x cần CUDA tương ứng, các gói extension như flash-attn, unsloth, triton yêu cầu đúng bản Python). Cài đặt tràn lan vào môi trường gốc (base/global) sẽ dẫn đến xung đột phiên bản và làm hỏng toàn bộ hệ thống Python.
+   - Mỗi dự án phải có một "môi trường ảo" riêng biệt, cô lập hoàn toàn.
 
-2. **Cài Miniconda.**
-   - Miniconda là bản cài đặt gọn của Anaconda: chỉ gồm Python + `conda` (trình quản lý gói & môi trường ảo), không kèm sẵn hàng trăm package như bản Anaconda đầy đủ nên đỡ nặng máy.
-   - Tải bản cài Windows 64-bit tại link tải trực tiếp chính thức (Anaconda luôn cập nhật link này trỏ tới bản mới nhất):
-     ```
-     https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
-     ```
-     (Trang liệt kê đầy đủ các bản: [repo.anaconda.com/miniconda](https://repo.anaconda.com/miniconda/); trang giới thiệu chính thức: [anaconda.com/download](https://www.anaconda.com/download) — kéo xuống mục **Miniconda Installers**.)
-   - Mở file `.exe` vừa tải, cài theo các bước: bấm **Next**, ở **Select Installation Type** chọn **Just Me**, giữ nguyên thư mục cài mặc định (tránh đổi sang đường dẫn có dấu cách hoặc ký tự tiếng Việt có dấu — dễ gây lỗi với các công cụ mã nguồn mở). Ở **Advanced Installation Options**, **tick thêm ô "Add Miniconda3 to my PATH environment variable"** — ô này mặc định KHÔNG được tick (Anaconda khuyên không tick để tránh xung đột với các bản Python khác trên máy), nhưng tick lên thì mới gõ được `conda`/`python` trực tiếp trong Terminal thường như hướng dẫn này dùng xuyên suốt, thay vì phải mở riêng "Anaconda Prompt (miniconda3)" mỗi lần. Giữ nguyên ô còn lại (**Register Miniconda3 as my default Python**) theo mặc định, bấm **Install**, đợi xong bấm **Finish**.
-   - Đóng cửa sổ Terminal đang mở (nếu có) và mở **Terminal mới** để PATH vừa được cài đặt cập nhật, sau đó kiểm tra:
-     ```
-     conda --version
-     ```
+2. **Cài đặt Miniconda — Lưu ý sống còn về biến môi trường PATH.**
+   - Miniconda là bản rút gọn chỉ gồm Python + `conda` (trình quản lý gói & môi trường mạnh mẽ).
+   - Tải bộ cài Windows 64-bit từ trang chủ: [repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe](https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe).
+   - Mở file `.exe`, chọn **Just Me**, giữ nguyên đường dẫn cài đặt mặc định (tránh thư mục có dấu tiếng Việt hoặc khoảng trắng).
 
-3. **Tạo và kích hoạt một conda environment.**
-   - Tạo môi trường mới tên `myenv` với Python 3.13 — lùi lại một bản so với bản mới nhất (3.14, tính tới 9/2026) để tránh các vấn đề tương thích thường gặp ở bản Python vừa ra mắt, trong khi vẫn được các thư viện AI/ML như `numpy`, `pandas`, PyTorch hỗ trợ đầy đủ (sẽ dùng lại ở file `06-ai-ml.md`):
+   > [!WARNING]
+   > **Tại màn hình "Advanced Installation Options":**
+   > - **TUYỆT ĐỐI KHÔNG TICK** ô *"Add Miniconda3 to my PATH environment variable"*.
+   > - *Lý do:* Tick ô này sẽ ghi đè PATH hệ thống, gây xung đột nghiêm trọng với Python của Windows Store, Python của các IDE khác, làm `pip` và `python` trỏ lệch phiên bản dẫn đến lỗi môi trường ảo không nhận đúng package.
+
+   - Giữ nguyên ô *"Register Miniconda3 as my default Python"*, bấm **Install** và đợi hoàn thành.
+
+3. **Khởi tạo Conda trong Windows Terminal (`conda init`).**
+   - Sau khi cài xong, bấm nút Start, tìm và mở app **Anaconda Prompt (Miniconda3)**.
+   - Trong cửa sổ Anaconda Prompt, chạy lệnh để tích hợp conda vào PowerShell:
+     ```powershell
+     conda init powershell
      ```
-     conda create -n myenv python=3.13
+   - Đóng cửa sổ Anaconda Prompt. Từ nay về sau, bạn chỉ cần mở **Windows Terminal** (PowerShell) thông thường là đã có thể dùng được lệnh `conda`.
+   - Mở Windows Terminal mới, kiểm tra đường dẫn các file thực thi:
+     - [PowerShell - Windows]:
+       ```powershell
+       where.exe python
+       where.exe conda
+       conda --version
+       ```
+
+4. **Tạo và kích hoạt môi trường ảo `ai-env` với Python 3.11.**
+   - **Vì sao chọn Python 3.11 mà không phải 3.13?**
+     - Các thư viện AI/ML nền tảng (PyTorch, TensorFlow, CUDA Toolkit, vLLM, Unsloth, Flash Attention) phụ thuộc rất nhiều vào các thư viện C/C++ (C extensions).
+     - **Python 3.11** là phiên bản có độ tương thích cao và an toàn nhất hiện nay cho hệ sinh thái AI/ML.
+     - **Python 3.12** có thể sử dụng cho các dự án data thông thường.
+     - **Python 3.13** chưa nên dùng làm mặc định cho AI/ML vì nhiều gói CUDA chưa biên dịch sẵn wheel cho bản này.
+   - [PowerShell - Windows]: Tạo môi trường tên `ai-env`:
+     ```powershell
+     conda create -n ai-env python=3.11 -y
      ```
-     Đổi `myenv` thành tên gợi nhớ theo từng dự án thật (ví dụ `ai-project`). Gõ `y` rồi Enter khi được hỏi xác nhận cài các gói cơ bản.
-   - Kích hoạt môi trường vừa tạo:
+   - Kích hoạt môi trường:
+     ```powershell
+     conda activate ai-env
      ```
-     conda activate myenv
-     ```
-     Nhận biết đã vào đúng môi trường qua chữ `(myenv)` xuất hiện ở đầu dòng lệnh.
-   - Muốn thoát ra môi trường hiện tại (quay về `base`), gõ:
-     ```
+     *(Dấu hiệu nhận biết: đầu dòng lệnh xuất hiện tiền tố `(ai-env)`).*
+   - Khi muốn thoát môi trường:
+     ```powershell
      conda deactivate
      ```
 
-4. **Cách khác — venv chuẩn của Python (không dùng conda).**
-   - `venv` là module có sẵn đi kèm mọi bản Python — không cần Miniconda. Vì Miniconda ở bước 2 đã cài sẵn một bản Python, có thể dùng `venv` ngay trong Terminal thường (không cần `conda activate` trước); nếu muốn dùng `venv` hoàn toàn độc lập, không qua conda, cần tải Python riêng tại [python.org/downloads](https://www.python.org/downloads/).
-   - Trong thư mục dự án, tạo môi trường ảo tên `myenv`:
+5. **Quy tắc cài package bằng `python -m pip` và `requirements.txt`.**
+   - **Tránh dùng `pip install ...` trực tiếp:** Khi máy có nhiều bản Python, gõ `pip` có thể gọi nhầm pip của bản Python khác. Luôn dùng cú pháp tường minh:
+     ```powershell
+     python -m pip install <tên-gói>
      ```
-     python -m venv myenv
+   - Kiểm tra xem python và pip có đang trỏ đúng vào `ai-env` không:
+     ```powershell
+     python -c "import sys; print(sys.executable)"
+     python -m pip --version
      ```
-     Lệnh này tạo ra một thư mục con `myenv\` chứa bản Python riêng cho dự án.
-   - Kích hoạt (PowerShell):
-     ```
-     .\myenv\Scripts\Activate.ps1
-     ```
-     Nhận biết đã kích hoạt qua chữ `(myenv)` ở đầu dòng lệnh, giống conda. Xem mục **Lỗi thường gặp** bên dưới nếu PowerShell báo lỗi chặn script.
-   - Thoát ra bằng lệnh:
-     ```
-     deactivate
+     *(Đường dẫn in ra phải nằm trong thư mục `miniconda3\envs\ai-env\...`)*.
+
+   - **Quản lý dependencies chuẩn qua `requirements.txt`:**
+     - Tạo file `requirements.txt` với nội dung các thư viện cần thiết:
+       ```text
+       numpy
+       pandas
+       scikit-learn
+       ```
+     - Cài đặt toàn bộ:
+       ```powershell
+       python -m pip install -r requirements.txt
+       ```
+     - Xuất danh sách phiên bản cố định để chia sẻ hoặc backup:
+       ```powershell
+       python -m pip freeze > requirements-lock.txt
+       ```
+
+6. **(Lựa chọn hiện đại) Quản lý môi trường cực nhanh bằng `uv`.**
+   - Nếu bạn đã cài `uv (Astral)` qua script hoặc winget (`winget install --id astral-sh.uv -e`), `uv` có thể thay thế cả pip và conda để tạo venv và cài package với tốc độ nhanh gấp 10-50 lần:
+     ```powershell
+     uv python install 3.11
+     uv venv --python 3.11
+     .\.venv\Scripts\Activate.ps1
+     uv pip install numpy pandas scikit-learn
      ```
 
-5. **Cài thử một thư viện cơ bản để kiểm tra.**
-   - Dù dùng conda environment (bước 3) hay venv (bước 4), sau khi đã **activate** (thấy `(myenv)` ở đầu dòng lệnh), cài thử 2 thư viện data science cơ bản bằng `pip` (đã có sẵn trong cả 2 loại môi trường):
-     ```
-     pip install numpy pandas
-     ```
+---
 
 ## ✅ Kiểm tra đã thành công
 
-- `conda --version` ra số phiên bản (dạng `conda 2x.x.x`), không báo lỗi `not recognized`.
-- `conda env list` liệt kê thấy `myenv` trong danh sách.
-- Sau khi activate (conda hoặc venv), dòng lệnh hiện tiền tố `(myenv)` phía trước đường dẫn.
-- Chạy lệnh sau trong môi trường đã activate, ra đúng 2 số phiên bản, không báo lỗi `ModuleNotFoundError`:
+- [PowerShell - Windows]: Khi đã chạy `conda activate ai-env`:
+  ```powershell
+  python -c "import sys, numpy, pandas; print(sys.version); print('Numpy:', numpy.__version__); print('Pandas:', pandas.__version__)"
   ```
-  python -c "import numpy, pandas; print(numpy.__version__, pandas.__version__)"
-  ```
+  *(Hiển thị Python phiên bản 3.11.x và số phiên bản của numpy, pandas mà không báo lỗi)*.
+
+---
 
 ## ⚠️ Lỗi thường gặp
 
-- Gõ `conda activate myenv` trong Terminal/PowerShell thường mà báo `CommandNotFoundError: Run 'conda init' before 'conda activate'`: conda chưa được "gắn" vào shell đang dùng. Chạy `conda init powershell`, sau đó **đóng hẳn và mở lại Terminal mới** rồi thử lại (bước này chỉ cần làm 1 lần).
-- Kích hoạt venv bằng `.\myenv\Scripts\Activate.ps1` mà PowerShell báo đỏ dạng `... cannot be loaded because running scripts is disabled on this system`: do PowerShell mặc định chặn chạy script local. Chạy lệnh sau (chỉ ảnh hưởng user hiện tại, không cần quyền admin), rồi thử activate lại:
-  ```
+- **Chạy `conda activate` báo lỗi script bị chặn trên PowerShell:** Mở PowerShell chạy lệnh cấp quyền:
+  ```powershell
   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
   ```
+- **Lỗi `CommandNotFoundError: Run 'conda init' before 'conda activate'`:** Mở lại **Anaconda Prompt** từ Start Menu và gõ lại `conda init powershell`, sau đó tắt đi và mở lại Windows Terminal mới.
+- **Thư viện cài xong nhưng import báo `ModuleNotFoundError`:** 99% nguyên nhân là bạn cài bằng `pip` của một môi trường khác. Luôn kiểm tra xem `(ai-env)` đã xuất hiện ở đầu prompt chưa và luôn dùng lệnh `python -m pip install`.
+

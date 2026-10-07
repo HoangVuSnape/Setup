@@ -2,80 +2,153 @@
 
 ## Mục tiêu
 
-Sau bước này, máy có một bản Windows 11 sạch, đã cập nhật đầy đủ, có driver GPU đúng, đã kích hoạt (activated), và đã dọn bớt vài app mặc định không cần thiết — sẵn sàng để cài các công cụ dev ở các bước tiếp theo.
+Sau bước này, máy có một bản Windows 11 sạch, an toàn về dữ liệu cũ, đã sao lưu BitLocker Recovery Key và driver mạng, đã cập nhật đầy đủ Windows Update, có driver GPU đúng, đã kích hoạt bản quyền — sẵn sàng để cài các công cụ dev ở các bước tiếp theo.
 
-## Các bước
+## Các bước chuẩn bị quan trọng (BẮT BUỘC TRƯỚC KHI CÀI)
 
-1. **Kiểm tra xem cần làm gì trước khi bắt đầu — có 3 trường hợp.**
-   - Máy đang dùng đã có sẵn Windows 11, chỉ đang rà lại theo checklist này (không cần cài/xoá gì) → **bỏ qua bước 2, 3, 4**, chuyển thẳng tới bước 5 (Windows Update).
-   - Máy đã có sẵn Windows 11 nhưng muốn **xoá sạch dữ liệu cũ, làm mới hoàn toàn ngay trên máy đó** (máy chạy chậm/lag lâu ngày, hoặc chỉ đơn giản muốn cài lại sạch) → làm bước 2 (**Reset this PC**, không cần USB), **bỏ qua bước 3 và 4**.
-   - Máy trống hoàn toàn (mới mua chưa cài OS, hoặc ổ cứng hỏng/thay mới, không boot vào được Windows để Reset) → **bỏ qua bước 2**, làm bước 3 và 4 (Media Creation Tool + USB).
+### 0. Sao lưu dữ liệu, BitLocker Recovery Key và Driver mạng
 
-2. **(Nếu máy đã có Windows 11, muốn cài sạch lại) Dùng Reset this PC — không cần USB.**
-   - Vào **Settings > System > Recovery** (hoặc bấm `Win + R`, gõ `ms-settings:recovery`, Enter).
-   - Ở mục **Reset this PC**, bấm **Reset PC**.
-   - Chọn **Remove everything** (xoá hết file cá nhân + app đã cài, cài lại từ đầu) — không chọn "Keep my files".
-   - Ở màn hình chọn cách lấy Windows, chọn **Cloud download** (Microsoft tải thẳng bản Windows mới về) thay vì **Local reinstall** (dùng lại file có sẵn trên máy, có thể dính lỗi cũ) — Cloud download cho bản sạch và mới hơn, chỉ cần internet ổn định vì phải tải khoảng 4GB.
-   - Ở màn hình **Additional settings**: giữ mặc định, **không cần bật** tuỳ chọn "Clean the drive fully" (chỉ cần khi bán/cho máy đi để chống khôi phục dữ liệu — bật lên sẽ mất thêm rất nhiều thời gian không cần thiết cho việc tự dùng lại).
-   - Nếu máy là laptop hãng (Lenovo, Dell, Asus...), có thể xuất hiện màn hình hỏi có muốn **cài lại app của hãng** không (ví dụ Lenovo Vantage) — **chọn không cài lại** để máy sạch, các app này không cần thiết cho việc học IT/AI.
-   - Bấm **Reset**. Máy sẽ khởi động lại và tự tải + cài đặt lại Windows — quá trình có thể mất khá lâu tuỳ tốc độ mạng (có thể vài tiếng nếu mạng chậm), cứ để máy tự chạy tới khi vào được màn hình thiết lập ban đầu (chọn vùng/ngôn ngữ, đăng nhập tài khoản...).
-   - **Về key/activation — không lo mất key:** laptop hãng như Lenovo có key Windows gắn thẳng vào chip firmware (BIOS/UEFI) của bo mạch chủ, không nằm trên ổ cứng hay trong bản Windows đang chạy — Reset/cài lại bao nhiêu lần cũng không xoá được key này. Sau khi Reset xong, Windows tự đọc lại key từ firmware và tự kích hoạt (xem lại ở bước 7), không cần nhập gì thêm — miễn là cài lại đúng edition đang dùng (Reset this PC tự động giữ nguyên edition, không cho đổi). Muốn xem trước key đang gắn sẵn cho yên tâm, mở PowerShell (Admin) và chạy:
+> [!CAUTION]
+> **Đừng vội cài đặt khi chưa hoàn thành bước này!** Nếu ổ cứng đang bật BitLocker hoặc cài xong máy không nhận Wi-Fi, bạn có thể bị mất trắng dữ liệu hoặc không vào được mạng.
+
+1. **Kiểm tra và lưu BitLocker Recovery Key:**
+   - Mở PowerShell (Admin) chạy:
+     ```powershell
+     manage-bde -status
+     ```
+   - Nếu ở dòng **Protection Status** ghi `Protection On`: ổ đĩa đang được mã hóa BitLocker. Bạn **bắt buộc** phải lưu Recovery Key 48 chữ số.
+     - Truy cập vào trang quản lý của Microsoft: [account.microsoft.com/devices/recoverykey](https://account.microsoft.com/devices/recoverykey) và đăng nhập tài khoản Microsoft của máy để xem và lưu lại key (chụp ảnh bằng điện thoại hoặc ghi ra giấy).
+     - Hoặc xuất key ra file trên ổ USB ngoài:
+       ```powershell
+       (Get-BitLockerVolume -MountPoint C:).KeyProtector | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' } | Select-Object -ExpandProperty RecoveryPassword
+       ```
+   - Nếu ở dòng **Protection Status** ghi `Protection Off`: **Ổ đĩa không bị mã hóa BitLocker**. Bạn hoàn toàn yên tâm **bỏ qua bước này** và chuyển thẳng sang bước chuẩn bị driver bên dưới.
+
+2. **Tải sẵn Driver Wi-Fi / LAN và GPU ra USB:**
+   - Nhiều bản cài Windows 11 mới thiếu driver mạng cho các dòng card Wi-Fi mới (Intel Wi-Fi 6E/7, Realtek, MediaTek). Sau khi cài xong nếu không có mạng thì không tải được driver khác hay Windows Update.
+   - Lên trang hỗ trợ của hãng máy (Dell, Lenovo, Asus, HP, Acer...) hoặc mainboard, tìm đúng model máy và tải file cài đặt **Wi-Fi Driver** + **LAN Driver**, lưu sẵn vào một USB.
+   - *Mẹo cứu nguy:* Chuẩn bị sẵn cáp kết nối điện thoại với laptop và bật chế độ **USB Tethering (Chia sẻ kết nối qua USB)** trên điện thoại Android/iPhone trong trường hợp máy tính chưa nhận Wi-Fi.
+
+3. **Kiểm tra trạng thái bản quyền Windows (License):**
+   - Không phải máy nào cũng gắn key vĩnh viễn trong chip firmware (BIOS). Bản quyền Windows có thể là: OEM key trong firmware, Digital License liên kết phần cứng, hoặc License liên kết tài khoản Microsoft.
+   - Kiểm tra xem máy có OEM Key trong firmware không bằng PowerShell:
      ```powershell
      (Get-CimInstance -ClassName SoftwareLicensingService).OA3xOriginalProductKey
      ```
-     Ra được 1 dãy key nghĩa là key vẫn nằm sẵn trong firmware, Reset xong sẽ tự kích hoạt lại bình thường.
+   - Nếu trả về key: Máy có key phần cứng, cài lại đúng edition (Home/Pro) sẽ tự nhận.
+   - Nếu **không trả về key**: Điều đó **không đồng nghĩa với việc mất bản quyền**, máy có thể đang dùng Digital License liên kết với tài khoản Microsoft (MSA). Hãy đảm bảo bạn nhớ tài khoản Microsoft đang dùng trên máy để sau khi cài xong đăng nhập lại là tự kích hoạt.
 
-3. **(Chỉ khi máy trống hoàn toàn) Tạo USB cài đặt bằng Media Creation Tool.**
-   - Chuẩn bị một USB rỗng dung lượng tối thiểu 8GB, nên dùng 16GB trở lên chuẩn USB 3.0 — xem hướng dẫn chọn USB đầy đủ tại [docs/common/chon-usb-boot.md](../common/chon-usb-boot.md). Toàn bộ dữ liệu trên USB sẽ bị xoá khi tạo bộ cài.
-   - Vào trang tải chính thức của Microsoft: `https://www.microsoft.com/software-download/windows11`, tìm mục **"Create Windows 11 Installation Media"** và tải Media Creation Tool.
-   - Chạy file `.exe` vừa tải, chọn **"Create installation media (USB flash drive, DVD, or ISO file) for another PC"**, chọn ổ USB, để tool tự tải bản Windows 11 mới nhất và ghi vào USB.
-   - Lưu ý điều kiện tối thiểu để cài được Windows 11: máy phải có TPM 2.0, Secure Boot bật trong BIOS/UEFI, và CPU nằm trong danh sách được hỗ trợ — Microsoft không nới lỏng yêu cầu này.
+---
 
-4. **(Chỉ khi máy trống hoàn toàn) Cài Windows 11 từ USB.**
-   - Cắm USB vào máy, khởi động lại, vào Boot Menu (thường là phím F11/F12/Esc lúc khởi động, tuỳ mainboard) để chọn boot từ USB.
-   - Làm theo các màn hình cài đặt: chọn ngôn ngữ; nếu màn hình hỏi Product key mà máy vốn đã có digital license, chọn **"I don't have a product key"** rồi chọn đúng edition Windows 11 khớp với license cũ; ở màn hình điều khoản, chọn **Accept**.
-   - Ở màn hình **"Select location to install Windows 11"**: nếu muốn cài sạch, xoá hết các partition hiện có trên Disk 0 cho tới khi chỉ còn Unallocated Space, chọn Unallocated Space rồi bấm **Next**.
-   - Máy sẽ tự khởi động lại vài lần trong lúc cài. Sau khi cài xong, làm theo wizard thiết lập ban đầu (đăng nhập tài khoản Microsoft hoặc tạo local account, chọn vùng/ngôn ngữ...).
+## Các bước cài đặt
 
-5. **Windows Update — cập nhật đầy đủ trước khi làm bất cứ gì khác.**
-   - Mở Settings (phím tắt `Win + I`) rồi vào **Windows Update**, bấm **Check for updates**.
-   - Cài hết mọi bản cập nhật hiện ra. Vì Windows Update thường trả kết quả theo từng đợt, có thể cần bấm **Check for updates** lại nhiều lần cho tới khi không còn gì để cài.
-   - Nếu được yêu cầu, restart máy rồi lặp lại bước "Check for updates" tới khi màn hình báo **"You're up to date"**.
-   - (Tuỳ chọn) vào **Settings > Windows Update > Advanced options**, bật **"Get the latest updates as soon as they're available"** để nhận bản vá sớm hơn.
+1. **Xác định phương án phù hợp — có 3 trường hợp:**
+   - **Trường hợp A:** Máy đang dùng ổn định, chỉ rà lại checklist để cài môi trường dev AI → **Bỏ qua bước 2, 3, 4**, chuyển thẳng tới bước 5 (Windows Update).
+   - **Trường hợp B:** Máy đang chạy Windows 11 nhưng muốn làm mới hoàn toàn, máy chạy chậm/rác → dùng **Reset this PC** ở bước 2 (không cần USB).
+   - **Trường hợp C:** Máy trống hoàn toàn (máy mới, thay SSD mới) hoặc muốn cài sạch 100% bằng USB → làm bước 3 và 4.
 
-6. **Xác định GPU và cài driver đúng — quan trọng cho AI/ML sau này.**
-   - Xác định máy đang có GPU hãng nào bằng một trong hai cách:
-     - Bấm `Ctrl + Shift + Esc` mở Task Manager, chọn tab **Performance**, mục **GPU** — tên GPU hiện ở góc trên bên phải khung đó.
-     - Hoặc chuột phải nút Start > **Device Manager** > mở rộng mục **Display adapters**.
-   - Vào đúng trang driver chính thức của hãng GPU tương ứng (không tải driver từ trang bên thứ ba):
-     - **NVIDIA**: `https://www.nvidia.com/en-us/drivers/`
-     - **AMD (Radeon)**: `https://www.amd.com/en/support/download/drivers.html` — dùng AMD Auto-detect Tool để tự nhận diện GPU, hoặc chọn thủ công đúng dòng card qua Product Selector.
-     - **Intel (Arc hoặc GPU tích hợp)**: `https://www.intel.com/content/www/us/en/download-center/home.html`, hoặc dùng app **Intel Driver & Support Assistant** (thường cài sẵn trên máy có Intel Arc).
-   - Tải bản driver mới nhất khớp đúng model GPU + Windows 11, chạy file cài, restart nếu được yêu cầu.
-   - Vì sao bước này quan trọng: ở file `06-ai-ml.md` sau này sẽ cài PyTorch để tận dụng GPU tăng tốc train model. PyTorch (bản GPU) chạy qua CUDA, và CUDA chỉ nhận đúng GPU khi driver NVIDIA đủ mới và tương thích phiên bản — driver quá cũ là nguyên nhân phổ biến nhất khiến PyTorch không thấy GPU. Nếu máy dùng GPU AMD/Intel, phần tăng tốc AI sẽ đi hướng khác (ROCm/DirectML) ở bước sau; ở bước này chỉ cần cài driver chính hãng mới nhất là đủ.
+2. **(Phương án Reset this PC) Khôi phục máy sạch không cần USB.**
+   - Vào **Settings > System > Recovery** (hoặc `Win + R`, gõ `ms-settings:recovery`).
+   - Ở mục **Reset this PC**, bấm **Reset PC**.
+   - Chọn **Remove everything** (xóa app và file rác cũ).
+   - Chọn **Cloud download** (tải bản mới sạch trực tiếp từ Microsoft, cần tải ~4GB) thay vì *Local reinstall*.
+   - Ở **Additional settings**: giữ mặc định (không cần chọn Full Clean Drive trừ khi bán máy).
+   - Nếu máy hỏi có muốn cài lại phần mềm kèm theo của hãng sản xuất không: **Chọn không cài lại** để hệ điều hành sạch nhất.
+   - Bấm **Reset**, cắm sạc cho máy tự khởi động lại và tiến hành cài đặt (thường mất 20–40 phút).
 
-7. **Kiểm tra Windows đã kích hoạt (activated) chưa.**
-   - Vào **Settings > System > Activation** (hoặc bấm `Win + R`, gõ `ms-settings:activation`, Enter để mở thẳng trang này).
-   - Xem dòng **Activation state**: nếu ghi **"Active"**, nghĩa là Windows đã kích hoạt xong (thường tự động nếu máy có digital license gắn với phần cứng từ trước, hoặc do đã nhập product key lúc cài).
-   - Nếu chưa active, làm theo hướng dẫn ngay trên trang Activation (nhập product key, hoặc chạy Activation Troubleshooter tích hợp sẵn).
+   #### 👉 Từng bước thao tác khi máy khởi động lại vào màn hình thiết lập ban đầu (OOBE):
+   Sau khi máy chạy 100% và khởi động lại, bạn sẽ thấy màn hình xanh với các câu hỏi thiết lập:
+   1. **Country or region:** Chọn *United States* hoặc *Vietnam* > Bấm **Yes**.
+   2. **Keyboard layout:** Chọn *US* > Bấm **Yes**. Màn hình hỏi thêm layout thứ hai: Bấm **Skip**.
+   3. **Connect to a network:** Chọn mạng Wi-Fi nhà bạn và nhập mật khẩu để kết nối Internet. *(Nếu chưa nhận card Wi-Fi: cắm USB có driver mạng ở Bước 0 vào hoặc cắm cáp sạc điện thoại bật USB Tethering).*
+   4. **Name your PC:** Đặt tên cho máy tính không dấu (ví dụ: `hoang-laptop`) > Bấm **Next**. Máy sẽ tự khởi động lại một lần.
+   5. **Sign in with Microsoft:** Nhập tài khoản Microsoft đã dùng trước đây (để tự kích hoạt lại bản quyền Windows).
+   6. **Restore or Set up as new:** Chọn **"Set up as a new PC"** (để máy sạch hoàn toàn, không đồng bộ lại app rác từ máy cũ) > Bấm **Next**.
+   7. **Create a PIN:** Đặt mã PIN bảo mật 4–6 số để mở khóa máy.
+   8. **Privacy settings:** Gạt tắt các mục không cần thiết (Location, Diagnostic data tùy chọn, Personalized ads) > Bấm **Accept**.
+   9. **Các màn hình quảng cáo (Game Pass, Microsoft 365, OneDrive backup):** Chọn **"No thanks"** / **"Skip for now"** / **"Decline"**.
+   10. Chờ 1–2 phút cho màn hình chào đón *"Hi, Getting things ready for you..."* chạy xong là bạn sẽ vào thẳng **Màn hình Desktop mới**.
 
-8. **(Tuỳ chọn) Gỡ bớt vài app mặc định không cần dùng.**
-   - Vào **Settings > Apps > Installed apps**.
-   - Tìm app muốn gỡ (ví dụ: Cortana, một vài app hãng máy cài sẵn không dùng tới), bấm nút **"..."** (3 chấm) bên cạnh app đó > **Uninstall**.
-   - Chỉ gỡ app chắc chắn không cần. Một số app do OEM (hãng sản xuất máy) cài sẵn để điều khiển phần cứng (chỉnh quạt, giới hạn sạc pin, phím chức năng, firmware...) — không gỡ nếu không chắc app đó dùng để làm gì.
-   - Không cần "debloat" triệt để ở bước này — mục tiêu chỉ là dọn bớt những app rõ ràng không dùng tới.
+   #### 👉 Vừa vào màn hình Desktop mới thì làm gì tiếp theo? (Thứ tự chuẩn):
+   - **Việc 1:** Vào ngay **Settings (`Win + I`) > Windows Update**, bấm **Check for updates** cho máy cập nhật hết các bản vá và restart máy (làm theo Bước 5 bên dưới).
+   - **Việc 2:** Cài đặt **Driver GPU NVIDIA** mới nhất (làm theo Bước 6 bên dưới).
+   - **Việc 3 (Bắt đầu cài bộ công cụ Dev):** Bạn có 2 lựa chọn:
+     - *Cách nhanh (Khuyên dùng):* Mở PowerShell dán đúng 1 dòng lệnh cài tự động toàn bộ app:
+       ```powershell
+       irm https://raw.githubusercontent.com/HoangVuSnape/Setup/master/install/windows-setup.ps1 | iex
+       ```
+     - *Cách thủ công:* Mở trình duyệt Edge, vào GitHub `https://github.com/HoangVuSnape/Setup` và làm tiếp lần lượt theo file [02-essentials.md](02-essentials.md), [03-dev-tools.md](03-dev-tools.md), v.v.
+
+
+3. **(Phương án USB) Tạo USB cài đặt bằng Media Creation Tool.**
+   - Chuẩn bị một USB rỗng dung lượng tối thiểu 8GB (xem hướng dẫn tại [docs/common/chon-usb-boot.md](../common/chon-usb-boot.md)). Mọi dữ liệu trên USB này sẽ bị format sạch.
+   - Tải Media Creation Tool chính thức tại: [microsoft.com/software-download/windows11](https://www.microsoft.com/software-download/windows11).
+   - Chạy tool, chọn **"Create installation media for another PC"**, chọn USB và để tool tự tải và tạo USB boot.
+   - **Cách kiểm tra máy có hỗ trợ UEFI, TPM 2.0, Secure Boot:**
+     - Nếu máy đang chạy sẵn Windows 11 thì 100% phần cứng đã hỗ trợ và đang bật đầy đủ.
+     - Muốn kiểm tra lại chắc chắn: Mở PowerShell chạy:
+       ```powershell
+       Get-ComputerInfo | Select-Object BiosFirmwareType, BiosSecureBootValue
+       Get-Tpm | Select-Object TpmPresent, TpmReady
+       ```
+       *(BiosFirmwareType hiện `Uefi`, BiosSecureBootValue hiện `1` (Bật), TpmPresent & TpmReady đều hiện `True`).*
+
+
+4. **(Phương án USB) Cài đặt Windows 11 từ USB.**
+   - Rút toàn bộ ổ cứng ngoài, thẻ nhớ, USB dữ liệu khác (chỉ để lại đúng 1 USB cài đặt) để tránh xóa nhầm dữ liệu.
+   - Cắm USB vào máy, khởi động lại, bấm phím Boot Menu (F11/F12/Esc tuỳ mainboard) để chọn boot từ USB.
+   - Đến bước hỏi Product key: Nếu máy đã có license từ trước, chọn **"I don't have a product key"** rồi chọn đúng Edition (Home hoặc Pro) đã dùng trước đó.
+
+   > [!CAUTION]
+   > **Cảnh báo cực kỳ quan trọng tại màn hình "Where do you want to install Windows?":**
+   > - **KHÔNG ĐƯỢC mặc định giả định Disk 0 luôn là ổ cài hệ điều hành!** Nếu máy có 2 ổ cứng (ví dụ 1 ổ SSD NVMe chứa OS và 1 ổ SSD/HDD chứa dữ liệu học tập), xóa nhầm ổ sẽ mất toàn bộ tài liệu.
+   > - Hãy quan sát kỹ **Cột Dung lượng (Total Size / Free Space)** và số thứ tự Disk.
+   > - Chỉ chọn các phân vùng thuộc đúng ổ cứng bạn muốn cài lại Windows. Nếu muốn cài sạch hoàn toàn trên ổ đó, chọn từng phân vùng của ổ đó và bấm **Delete** cho tới khi thành một khối **Unallocated Space**, sau đó chọn khối đó và bấm **Next**.
+
+5. **Windows Update — cập nhật triệt để.**
+   - Mở Settings (`Win + I`) > **Windows Update** > bấm **Check for updates**.
+   - Cài hết tất cả bản cập nhật. Khởi động lại máy khi được yêu cầu.
+   - Lặp lại thao tác bấm **Check for updates** cho đến khi hiện thông báo **"You're up to date"**.
+
+6. **Kiểm tra và cài Driver GPU — nền tảng bắt buộc cho AI/ML.**
+   - Xác định model GPU: Mở Task Manager (`Ctrl + Shift + Esc`) > tab **Performance** > mục **GPU** (hoặc Device Manager > Display adapters).
+   - Tải driver mới nhất từ trang chính thức:
+     - **NVIDIA:** [nvidia.com/en-us/drivers/](https://www.nvidia.com/en-us/drivers/) (chọn bản Game Ready Driver hoặc Studio Driver tương ứng với GPU của bạn, ví dụ RTX 4050 Laptop).
+     - **AMD:** [amd.com/en/support/download/drivers.html](https://www.amd.com/en/support/download/drivers.html).
+     - **Intel:** [intel.com/content/www/us/en/download-center/home.html](https://www.intel.com/content/www/us/en/download-center/home.html).
+   - Chạy file cài đặt và restart máy.
+   - *Lý do:* PyTorch, CUDA, và các framework AI/ML đòi hỏi driver NVIDIA phải đủ mới để nhận diện phần cứng và biên dịch CUDA kernel.
+
+7. **Kiểm tra trạng thái kích hoạt (Activation).**
+   - Mở Settings > **System > Activation** (hoặc gõ `ms-settings:activation`).
+   - Kiểm tra dòng **Activation state**: phải hiện **Active**.
+   - Nếu chưa active: bấm **Troubleshoot** hoặc đăng nhập tài khoản Microsoft đã liên kết bản quyền.
+
+8. **(Tuỳ chọn) Gỡ bớt ứng dụng rác không cần thiết.**
+   - Vào **Settings > Apps > Installed apps**, gỡ các ứng dụng mặc định không dùng tới. Không gỡ các ứng dụng điều khiển phần cứng cần thiết (quạt tản nhiệt, chuyển đổi chế độ GPU mux switch).
+
+---
 
 ## ✅ Kiểm tra đã thành công
 
-- **Settings > Windows Update** hiện dòng **"You're up to date"**.
-- Task Manager > Performance > GPU (hoặc Device Manager > Display adapters) hiện đúng tên GPU của máy, không có dấu chấm than vàng cảnh báo lỗi driver.
-- **Settings > System > Activation** hiện **Activation state: Active**.
+- [PowerShell - Windows]: Kiểm tra thông tin hệ thống cơ bản:
+  ```powershell
+  systeminfo | Select-String "OS Name", "OS Version", "System Model"
+  ```
+- [PowerShell - Windows]: Kiểm tra GPU NVIDIA đã nhận driver thành công:
+  ```powershell
+  nvidia-smi
+  ```
+  *(Hiện bảng thông tin Driver Version, CUDA Version và danh sách GPU là thành công).*
+- **Settings > Windows Update** hiện **"You're up to date"**.
+- **Settings > System > Activation** báo **Active**.
+
+---
 
 ## ⚠️ Lỗi thường gặp
 
-- Máy không boot được từ USB cài Windows: vào BIOS/UEFI (thường phím `Del` hoặc `F2` lúc khởi động, tuỳ mainboard), kiểm tra Boot Order để USB được ưu tiên trước ổ cứng, và đảm bảo Secure Boot + TPM 2.0 đang bật — thiếu 1 trong 2 cái này Windows 11 sẽ từ chối cài.
-- Cài driver GPU xong nhưng Device Manager vẫn báo lỗi hoặc app không nhận GPU: gỡ driver cũ hoàn toàn bằng công cụ DDU (Display Driver Uninstaller) ở Safe Mode rồi cài lại bản mới, tránh tình trạng driver cũ còn sót gây xung đột.
-- Windows Update báo lỗi khi tải/cài update: bấm "Check for updates" lại vài lần (Windows Update đôi khi chỉ trả một phần kết quả), hoặc chạy Windows Update Troubleshooter tại **Settings > System > Troubleshoot > Other troubleshooters**.
-- Windows báo "Not activated" dù máy từng active trước đó (ví dụ sau khi đổi mainboard/cài lại): cần đăng nhập đúng tài khoản Microsoft đã link với digital license cũ, hoặc dùng Activation Troubleshooter ngay trong trang Activation.
-- Reset this PC (Cloud download) chạy rất lâu không xong hoặc báo lỗi giữa chừng: thường do mạng yếu/rớt mạng lúc đang tải — kiểm tra lại kết nối internet ổn định rồi thử **Reset PC** lại từ đầu; nếu vẫn lỗi, chuyển sang chọn **Local reinstall** thay vì Cloud download.
-- Reset xong Windows vẫn báo "Not activated" dù là máy hãng (Lenovo...) có key gốc: đợi thêm vài phút và đảm bảo máy đang có internet (activation cần gọi về server Microsoft để xác nhận key trong firmware), sau đó vào **Settings > System > Activation** bấm **Troubleshoot**. Nếu vẫn không được, kiểm tra lại đã cài đúng edition Windows khớp với key gốc chưa (xem lại bước 2).
+- **Cài xong không có kết nối Wi-Fi:** Cắm USB đã lưu sẵn Driver Wi-Fi ở Bước 0 vào cài đặt, hoặc cắm dây cáp điện thoại vào máy tính bật tính năng "Chia sẻ kết nối Internet qua USB" (USB Tethering).
+- **Xóa nhầm phân vùng dữ liệu:** Trước khi format/delete ở bước chọn ổ đĩa, luôn đối chiếu dung lượng ổ trong Task Manager hoặc chụp ảnh lại sơ đồ phân vùng cũ bằng điện thoại trước khi tiến hành.
+- **`nvidia-smi` báo lỗi `'nvidia-smi' is not recognized`:** Driver NVIDIA chưa được cài đặt hoặc thư mục `C:\Program Files\NVIDIA Corporation\NVSMI` chưa được thêm vào PATH. Hãy tải lại và cài đặt driver từ trang chủ NVIDIA.
+- **Windows báo "Not activated":** Nếu key nằm trong firmware nhưng chưa nhận, hãy kết nối mạng ổn định rồi bấm **Troubleshoot** trong mục Activation. Nếu là Digital License, hãy đăng nhập tài khoản Microsoft tương ứng.
+

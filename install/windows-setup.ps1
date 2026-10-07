@@ -1,3 +1,8 @@
+# Script cài đặt cơ bản cho máy AI/ML trên Windows 11.
+# Chỉ cài công cụ nền (Git, Docker, Terminal, 7-Zip, VS Code, ...).
+# KHÔNG cài PyTorch, CUDA, numpy, pandas, Jupyter, Ollama.
+# Các thư viện AI/ML sẽ được cài sau bằng uv trong từng dự án.
+
 param(
     [switch]$DryRun
 )
@@ -23,7 +28,7 @@ $script:OptionalAppGroups = [ordered]@{
         [PSCustomObject]@{ Name = 'Bitwarden'; WingetId = 'Bitwarden.Bitwarden' }
     )
     'AI & Productivity' = @(
-        [PSCustomObject]@{ Name = 'Python/Miniconda'; WingetId = 'Anaconda.Miniconda3' }
+        [PSCustomObject]@{ Name = 'uv (Astral)'; WingetId = 'astral-sh.uv' }
         [PSCustomObject]@{ Name = 'Obsidian'; WingetId = 'Obsidian.Obsidian' }
     )
     'Media & Communication' = @(
@@ -165,6 +170,8 @@ function Format-Summary {
             $lines += "$($r.Name): $($r.Message)"
         }
     }
+    $lines += ''
+    $lines += 'Luu y: Cac thu vien AI/ML (torch, numpy, pandas, jupyter, ...) se duoc cai sau bang uv trong tung du an, khong cai o buoc nay.'
     return $lines
 }
 
