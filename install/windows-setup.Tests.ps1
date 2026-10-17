@@ -86,7 +86,7 @@ Describe 'Format-Menu' {
 
         $lines = Format-Menu -FlatOptionalApps $flat -SelectionState $state -MandatoryApps $mandatory
 
-        $lines[0] | Should -BeLike '*Git*'
+        ($lines -join "`n") | Should -BeLike '*DANH SACH UNG DUNG*'
         ($lines -join "`n") | Should -BeLike '*-- Dev Tools --*'
         ($lines -join "`n") | Should -BeLike '*`[x`] 1. VS Code*'
         ($lines -join "`n") | Should -BeLike '*-- AI & Productivity --*'
@@ -106,23 +106,9 @@ Describe 'Test-WingetAvailable' {
     }
 }
 
-Describe 'Test-AppInstalled' {
-    It 'returns true when Invoke-Winget reports exit code 0' {
-        Mock Invoke-Winget { return 0 }
-        Test-AppInstalled -WingetId 'Git.Git' | Should -Be $true
-    }
-
-    It 'returns false when Invoke-Winget reports a non-zero exit code' {
-        Mock Invoke-Winget { return 1 }
-        Test-AppInstalled -WingetId 'Git.Git' | Should -Be $false
-    }
-
-    It 'calls winget list with the exact id and -e flag' {
-        Mock Invoke-Winget { return 0 }
-        Test-AppInstalled -WingetId 'Git.Git' | Out-Null
-        Should -Invoke Invoke-Winget -ParameterFilter {
-            $ArgumentList -join ',' -eq 'list,--id,Git.Git,-e'
-        }
+Describe 'Show-TqdmProgressBar' {
+    It 'runs without throwing errors for valid inputs' {
+        { Show-TqdmProgressBar -Current 1 -Total 5 -ItemName 'Git' } | Should -Not -Throw
     }
 }
 
@@ -159,17 +145,18 @@ Describe 'Invoke-InstallPlan' {
         )
     }
 
-    It 'skips apps already installed without calling Install-App' {
-        Mock Test-AppInstalled { return $true }
-        Mock Install-App { throw 'should not be called' }
+    It 'invokes Install-App for each app in the plan' {
+        Mock Install-App {
+            param($Name, $WingetId)
+            return [PSCustomObject]@{ Name = $Name; WingetId = $WingetId; Success = $true; Message = 'Cai thanh cong.' }
+        }
 
         $results = Invoke-InstallPlan -Apps $apps
         $results.Count | Should -Be 3
-        $results | ForEach-Object { $_.Message | Should -Be 'Da cai san, bo qua.' }
+        $results | ForEach-Object { $_.Success | Should -Be $true }
     }
 
     It 'continues installing remaining apps after one fails' {
-        Mock Test-AppInstalled { return $false }
         Mock Install-App {
             param($Name, $WingetId)
             if ($Name -eq 'App2') {
@@ -186,8 +173,7 @@ Describe 'Invoke-InstallPlan' {
         $results[2].Success | Should -Be $true
     }
 
-    It 'in DryRun mode marks every app as a simulated install without calling Test-AppInstalled or Install-App' {
-        Mock Test-AppInstalled { throw 'should not be called in DryRun' }
+    It 'in DryRun mode marks every app as a simulated install without calling Install-App' {
         Mock Install-App { throw 'should not be called in DryRun' }
 
         $results = Invoke-InstallPlan -Apps $apps -DryRun
@@ -236,10 +222,10 @@ Describe 'App data' {
         $bitwarden.Category | Should -Be 'Dev Tools'
     }
 
-    It 'has 5 mandatory apps and 12 optional apps across 3 categories' {
-        $script:MandatoryApps.Count | Should -Be 5
+    It 'has 0 mandatory apps and 17 selectable apps across 4 categories' {
+        $script:MandatoryApps.Count | Should -Be 0
         $flat = Get-FlatOptionalApps -Groups $script:OptionalAppGroups
-        $flat.Count | Should -Be 12
-        ($script:OptionalAppGroups.Keys | Measure-Object).Count | Should -Be 3
+        $flat.Count | Should -Be 17
+        ($script:OptionalAppGroups.Keys | Measure-Object).Count | Should -Be 4
     }
 }
