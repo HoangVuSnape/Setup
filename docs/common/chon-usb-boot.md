@@ -9,7 +9,7 @@ Sau bước này, bạn biết chọn đúng loại USB (dung lượng, chuẩn 
 1. **Chọn dung lượng: tối thiểu 8GB, nên mua 16GB hoặc 32GB.**
    - Windows 11: Microsoft yêu cầu tối thiểu 8GB, nhưng file cài đặt thực tế đã chiếm hơn 4GB, gần đầy USB 8GB — dễ lỗi "không đủ dung lượng" nếu bản cập nhật sau này nặng hơn.
    - Linux Mint XFCE: file ISO khoảng 2.8GB (xem [docs/linux/01-usb-install.md](../linux/01-usb-install.md)) — 8GB vẫn đủ, nhưng vẫn nên chọn 16GB+ để dùng USB đó cho cả 2 việc mà không cần mua riêng từng cái.
-   - Khuyên dùng: **16GB hoặc 32GB** — giá rẻ, phổ biến, dư dả cho cả 2 hệ điều hành.
+   - Khuyên dùng: **16GB hoặc 32GB** — giá rẻ, phổ biến, dư dả cho cả 2 hệ điều hành. Nếu bạn có sẵn USB hoặc thẻ nhớ dung lượng lớn (**64GB hoặc 128GB**), phương án tốt nhất là dùng **Ventoy** để tạo USB Multiboot — chứa cả bộ cài Windows, Linux Mint và tận dụng dung lượng còn lại lưu file cá nhân (xem hướng dẫn tại [tao-usb-boot-ventoy.md](tao-usb-boot-ventoy.md)).
 
 2. **Chọn chuẩn kết nối: ưu tiên USB 3.0/3.1/3.2 (thường có ký hiệu màu xanh dương bên trong cổng).**
    - USB 3.0 trở lên nhanh hơn USB 2.0 rất nhiều (thường gấp 5-10 lần tốc độ ghi/đọc thực tế) — rút ngắn đáng kể thời gian tạo bộ cài bằng Rufus và cả thời gian cài đặt hệ điều hành sau này (installer phải đọc rất nhiều file nhỏ từ USB).
@@ -22,7 +22,8 @@ Sau bước này, bạn biết chọn đúng loại USB (dung lượng, chuẩn 
    - Nếu nghi ngờ, dùng công cụ kiểm tra dung lượng thật miễn phí như **H2testw** (Windows) hoặc `f3` (Linux/macOS) trước khi dùng USB để tạo bộ cài.
 
 4. **Sao lưu dữ liệu trong USB trước khi dùng.**
-   - Cả công cụ tạo USB cài Windows (Media Creation Tool) lẫn Rufus (dùng cho Linux Mint, xem [docs/linux/01-usb-install.md](../linux/01-usb-install.md)) đều **xoá sạch toàn bộ dữ liệu** trên USB để ghi bộ cài mới — sao chép file quan trọng ra máy tính hoặc USB khác trước khi bắt đầu.
+   - Các công cụ tạo USB cài Windows (Media Creation Tool) hay Rufus (dùng cho Linux Mint, xem [docs/linux/01-usb-install.md](../linux/01-usb-install.md)) đều **xoá sạch toàn bộ dữ liệu** trên USB để ghi bộ cài mới — sao chép file quan trọng ra máy tính hoặc USB khác trước khi bắt đầu.
+   - *Mẹo tiết kiệm công sức:* Nếu dùng [Ventoy](tao-usb-boot-ventoy.md), bạn chỉ cần format xoá sạch thẻ/USB đúng 1 lần đầu tiên khi cài Ventoy. Về sau bạn có thể copy thêm/xóa bớt bất kỳ file ISO nào hoặc lưu trữ tài liệu cá nhân mà không bao giờ phải format lại nữa.
 
 ## ✅ Kiểm tra đã thành công
 
