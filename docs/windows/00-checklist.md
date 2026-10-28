@@ -24,4 +24,7 @@ Tick từng bước khi hoàn thành. Xem chi tiết ở file tương ứng.
   - Cài JupyterLab, đăng ký kernel `ai-env` qua `ipykernel`.
   - Cài Ollama, cấu hình thư mục model `OLLAMA_MODELS` tránh đầy ổ C, xác nhận GPU chạy LLM.
   - Chạy smoke test toàn hệ thống xác nhận CUDA, Tensor, Docker, Jupyter hoạt động hoàn hảo.
-
+- [ ] **Bước 7 — Gemini Notebook CLI & NotebookLM MCP Server** (xem [00-notebooklm-mcp.md](07-notebooklm-mcp/00-notebooklm-mcp.md))
+  - Cài `uv` và `notebooklm-mcp-cli`, đăng nhập Google bằng Chrome riêng của `nlm`.
+  - Cấu hình NotebookLM MCP Server cho GitHub Copilot trong VS Code.
+  - Biết cách kiểm tra, refresh và đăng nhập lại khi session hết hạn; không backup credential vào Git.

@@ -1,4 +1,4 @@
-# Cập nhật hệ thống và tối ưu tài nguyên cho máy yếu
+﻿# Cập nhật hệ thống và tối ưu tài nguyên cho máy yếu
 
 ## Mục tiêu
 
@@ -51,6 +51,16 @@ Sau bước này, máy Linux Mint vừa cài xong sẽ được cập nhật đ�
      ```
    - Mặc định trên Linux Mint/Ubuntu là `60`. Với máy có RAM khoảng 4GB trở lên, **cứ để nguyên giá trị mặc định là được**, không cần chỉnh. Chỉ cân nhắc giảm giá trị này (ví dụ xuống 10–20, sẽ hướng dẫn cách chỉnh ở file self-hosting sau nếu cần) khi máy có RAM dưới khoảng 4GB và thấy máy chậm bất thường do dùng swap quá sớm — quan sát qua thanh Swap trong `htop` lúc máy đang chạy nhiều dịch vụ.
 
+7. **Cấu hình nguồn điện cho laptop làm server: tắt Sleep và gập nắp không tắt máy.**
+   - Máy server cần chạy 24/7 để phục vụ dịch vụ và nhận kết nối SSH bất kỳ lúc nào. Nếu máy rơi vào chế độ Sleep (ngủ) hoặc tự ngủ khi gập nắp laptop, toàn bộ CPU, card mạng Wi-Fi và các container Docker sẽ bị ngắt hoàn toàn.
+   - **Tắt chế độ tự động Sleep:** Mở Terminal gõ xfce4-power-manager-settings (hoặc vào **Menu > Settings > Power Manager**). Chuyển sang tab **System**, kéo mục **System sleep mode** (hoặc thời gian tự ngủ khi cắm sạc) về **Never**. Ở tab **Display**, có thể bật tắt màn hình sau 5–10 phút để tiết kiệm điện.
+   - **Cấu hình gập nắp laptop không ngủ (Lid switch):** Chạy 2 lệnh sau trên Terminal để hệ thống bỏ qua hành vi gập nắp:
+     ``
+     sudo sed -i 's/#HandleLidSwitch=suspend/HandleLidSwitch=ignore/' /etc/systemd/logind.conf
+     sudo systemctl restart systemd-logind
+     ``
+   - Sau khi cấu hình, bạn có thể cắm sạc, gập nắp laptop lại và cất vào góc bàn/kệ sách cho gọn gàng — màn hình tắt ngúm nhưng bên trong máy vẫn chạy bình thường.
+
 ## ✅ Kiểm tra đã thành công
 
 - Chạy lại `sudo apt update` không báo gói nào cần nâng cấp thêm (hoặc rất ít, mới phát sinh).
@@ -58,6 +68,7 @@ Sau bước này, máy Linux Mint vừa cài xong sẽ được cập nhật đ�
 - Vào lại **Session and Startup > Application Autostart**, thấy đúng những mục đã chủ động bỏ tick, máy khởi động lại thấy màn hình vào desktop nhanh hơn một chút.
 - Gõ `htop` chạy được, thấy biểu đồ CPU/RAM/Swap cập nhật liên tục theo thời gian thực; bấm `q` thoát được về terminal bình thường.
 - Gõ `cat /proc/sys/vm/swappiness` ra một con số hợp lệ (thường là `60`).
+- Gập nắp laptop lại máy vẫn chạy bình thường, màn hình tắt và từ máy Windows vẫn kết nối SSH vào được.
 
 ## ⚠️ Lỗi thường gặp
 

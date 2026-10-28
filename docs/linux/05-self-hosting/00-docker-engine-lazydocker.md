@@ -1,4 +1,4 @@
-# Cài Docker Engine và lazydocker
+﻿# Cài Docker Engine và lazydocker
 
 ## Mục tiêu
 
@@ -46,7 +46,7 @@ Docker Engine sẽ dùng cho các ứng dụng self-host chạy bằng container
      ```
      sudo usermod -aG docker $USER
      ```
-   - Đăng xuất rồi đăng nhập lại (hoặc khởi động lại máy) để group mới có hiệu lực. Sau đó kiểm tra:
+   - Đăng xuất rồi đăng nhập lại (hoặc chạy lệnh `newgrp docker` để áp dụng ngay lập tức trong phiên Terminal hiện tại mà không cần thoát). Sau đó kiểm tra:
      ```
      docker run hello-world
      ```

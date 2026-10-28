@@ -1,4 +1,4 @@
-# Cài & cấu hình SSH để điều khiển máy Linux từ xa
+﻿# Cài & cấu hình SSH để điều khiển máy Linux từ xa
 
 ## Mục tiêu
 
@@ -74,13 +74,55 @@ Sau bước này, máy Linux Mint sẽ chạy sẵn SSH server, cho phép đăng
        6. Bấm **Save**, sau đó tắt rồi bật lại kết nối mạng đó (bấm vào icon mạng ở khay hệ thống, tắt rồi bật lại) hoặc khởi động lại máy để áp dụng.
    - Sau khi đặt IP tĩnh, kiểm tra lại bằng `hostname -I` — IP hiển thị phải đúng bằng IP vừa đặt, và giữ nguyên sau khi khởi động lại máy.
 
+7. **Cấu hình truy cập từ xa ngoài mạng nội bộ (4G, quán cafe) bằng Tailscale.**
+   - IP nội bộ dạng 192.168.x.x chỉ kết nối được khi cả 2 máy ở chung một nhà (cùng mạng Wi-Fi/router). Khi bạn xách laptop ra ngoài đường, dùng 4G hoặc Wi-Fi khác, hai máy không thể nhìn thấy nhau qua IP nội bộ.
+   - Để kết nối từ xa mọi lúc mọi nơi mà không cần mở port trên router (nguy hiểm nếu bị hacker quét), giải pháp chuẩn nhất là dùng **Tailscale** (miễn phí, tạo mạng VPN riêng ảo cấp IP cố định 100.x.y.z).
+   - **Cài đặt trên máy Linux Mint (máy Server):**
+     1. Cài đặt Tailscale bằng 1 dòng lệnh:
+        ``
+        curl -fsSL https://tailscale.com/install.sh | sh
+        ``
+     2. Khởi chạy và liên kết tài khoản:
+        ``
+        sudo tailscale up
+        ``
+        *(Mở đường link https://login.tailscale.com/a/... in ra trên màn hình để đăng nhập bằng Google/GitHub).*
+     3. Lấy IP Tailscale của máy Linux:
+        ``
+        tailscale ip -4
+        ``
+        *(Sẽ in ra một IP cố định dạng 100.x.y.z, ví dụ 100.65.12.37).*
+   - **Cài đặt trên máy Windows 11 (máy Client):**
+     1. Mở PowerShell gõ cài qua winget:
+        ``powershell
+        winget install -e --id Tailscale.Tailscale
+        ``
+     2. Đăng nhập cùng tài khoản với máy Linux:
+        ``powershell
+        tailscale up
+        ``
+        *(Trình duyệt sẽ tự bật lên để bấm Connect xác nhận).*
+     3. Kiểm tra kết nối giữa 2 máy:
+        ``powershell
+        tailscale status
+        ``
+   - **Kết nối SSH từ xa:**
+     Từ bất kỳ đâu (dù máy Windows dùng 4G hay Wi-Fi quán cafe), mở PowerShell gõ:
+     ``powershell
+     ssh <user>@<ip-tailscale>
+     ``
+     *(Hoặc gõ trực tiếp tên máy nhờ tính năng MagicDNS của Tailscale: ssh <user>@<tên-máy-Linux>, ví dụ ssh vusnape@vusnape-22).*
+
 ## ✅ Kiểm tra đã thành công
 
 - Lệnh `sudo systemctl status ssh` trên máy Linux hiện `Active: active (running)`.
 - Từ Terminal trên máy Windows, gõ `ssh <user>@<ip>` kết nối thành công, dấu nhắc lệnh đổi thành `<user>@<tên-máy-Linux>:~$`, gõ thử một lệnh bất kỳ (ví dụ `whoami`) chạy đúng trên máy Linux.
 - Sau khi đặt IP tĩnh (bước 6) và khởi động lại máy Linux, gõ `hostname -I` vẫn ra đúng địa chỉ IP đã đặt (không đổi sang địa chỉ khác), và `ssh <user>@<ip>` từ Windows với đúng IP đó vẫn kết nối được bình thường.
 
+- Cài Tailscale trên 2 máy, lệnh `tailscale status` trên Windows hiện đầy đủ 2 máy đang kết nối. Từ Windows dù ngắt Wi-Fi nhà và dùng 4G phát từ điện thoại vẫn `ssh <user>@<ip-tailscale>` vào được bình thường.
+
 ## ⚠️ Lỗi thường gặp
+- Báo lỗi "Connection timed out" khi SSH qua IP Tailscale (dạng 100.x.y.z): Kiểm tra xem máy Windows đã đăng nhập Tailscale chưa bằng lệnh `tailscale status`. Nếu hiện `Logged out`, hãy chạy lệnh `tailscale up` trên Windows để kết nối vào mạng.
 
 - Gõ `ssh` trên Windows Terminal báo "ssh: The term 'ssh' is not recognized...": rất hiếm gặp trên Windows 11 vì OpenSSH Client cài sẵn mặc định, nhưng nếu bị tắt thủ công trước đó thì vào **Settings > Apps > Optional features**, tìm và cài lại **"OpenSSH Client"**.
 - Gõ lệnh `ssh` xong đứng chờ rất lâu rồi báo "Connection timed out" hoặc "No route to host": kiểm tra lại 2 máy có đang cùng chung 1 mạng nội bộ không (cùng Wi-Fi/router, hoặc cùng cắm vào 1 switch/router qua dây LAN) — 2 máy khác mạng (ví dụ 1 máy dùng 4G, 1 máy dùng Wi-Fi nhà) sẽ không thấy nhau qua IP nội bộ kiểu này.
