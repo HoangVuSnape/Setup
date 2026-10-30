@@ -113,7 +113,66 @@ Sau bước này, máy Windows có thể:
 
    Không chạy các lệnh trên nếu client tương ứng chưa được cài.
 
-5. **Kiểm tra MCP và NotebookLM end-to-end.**
+5. **Cấu hình và sử dụng NotebookLM trong Antigravity.**
+
+   Nếu đã cài Google Antigravity, chạy trong PowerShell:
+
+   ```powershell
+   nlm setup add antigravity
+   nlm setup list
+   ```
+
+   Khởi động lại Antigravity sau khi thêm MCP. Trong cửa sổ chat của Antigravity, trước tiên gửi prompt kiểm tra:
+
+   ```text
+   Hãy kiểm tra NotebookLM MCP Server. Liệt kê các tool NotebookLM mà bạn đang thấy và xác nhận bạn có thể truy cập notebook "Model". Chưa tạo, sửa hoặc xóa dữ liệu.
+   ```
+
+   Khi MCP đã hoạt động, hãy nói rõ notebook cần dùng trong prompt. Notebook `Model` hiện có ID:
+
+   ```text
+   33dd2d2a-8013-4591-a1c2-bc6c0d0fd32a
+   ```
+
+   Prompt mẫu để hỏi nội dung:
+
+   ```text
+   Hãy dùng NotebookLM MCP để truy vấn notebook "Model"
+   (ID: 33dd2d2a-8013-4591-a1c2-bc6c0d0fd32a).
+   Chỉ dựa trên các source trong notebook, không tự bổ sung kiến thức bên ngoài.
+   Hãy tóm tắt chủ đề, mục tiêu và các yêu cầu bắt buộc của tài liệu.
+   Trích dẫn source/page nếu NotebookLM cung cấp citation.
+   ```
+
+   Prompt mẫu để yêu cầu phân tích tiếp:
+
+   ```text
+   Dùng NotebookLM MCP và notebook "Model" làm nguồn chính.
+   Hãy giải thích sự khác nhau giữa B0, H1 và H2,
+   sau đó liệt kê A1, A2, A3 cùng thành phần mà mỗi ablation thay đổi.
+   Nếu tài liệu không nói rõ điều gì, hãy ghi "Tài liệu không nêu rõ",
+   không đoán và không dùng nguồn web.
+   ```
+
+   Prompt mẫu để kết hợp với file trong workspace:
+
+   ```text
+   Trước hết hãy dùng NotebookLM MCP để đọc yêu cầu trong notebook "Model".
+   Sau đó kiểm tra các file hiện có trong workspace và lập bảng:
+   yêu cầu trong notebook | file đáp ứng | phần còn thiếu.
+   Chỉ lập kế hoạch và báo cáo thiếu sót; chưa tự sửa file và chưa chạy lệnh
+   có tác dụng phụ.
+   ```
+
+   Khi muốn Antigravity thực hiện hành động như thêm source, tạo report hoặc tạo artifact, phải nói rõ:
+   - notebook nào;
+   - source nào;
+   - loại artifact cần tạo;
+   - có được phép ghi dữ liệu hay không.
+
+   Không bắt đầu bằng yêu cầu xóa notebook, xóa source, mời người khác hoặc tạo artifact nếu chưa kiểm tra tool và phạm vi quyền.
+
+6. **Kiểm tra MCP và NotebookLM end-to-end.**
 
    ```powershell
    nlm login --check
@@ -127,9 +186,7 @@ Sau bước này, máy Windows có thể:
    Hãy liệt kê các notebook tôi có quyền truy cập và chỉ hiển thị tên cùng số lượng source.
    ```
 
-   Không bắt đầu bằng yêu cầu xóa notebook, xóa source, mời người khác hoặc tạo artifact nếu chưa kiểm tra tool và phạm vi quyền.
-
-6. **Xử lý session hết hạn.**
+7. **Xử lý session hết hạn.**
 
    Thử refresh session trước:
 
@@ -156,7 +213,7 @@ Sau bước này, máy Windows có thể:
    nlm login --clear --storage protected
    ```
 
-7. **Cài lại trên máy mới.**
+8. **Cài lại trên máy mới.**
 
    Thực hiện lại từ Bước 1 đến Bước 4. Không sao chép cookie/token từ máy cũ; chỉ cần:
 
